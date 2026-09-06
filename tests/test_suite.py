@@ -400,5 +400,107 @@ def test_judge_calibration_set_matches_the_rubric():
     assert "42" in stated and "16 FAIL" in stated and "26 PASS" in stated, stated
 
 
+
+def test_system_map_matches_its_generator():
+    """The system map is output, not a drawing. A hand edit to the SVG fails here."""
+    r = run(["tools/render_map.py", "--check"])
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_readme_process_cards_match_the_ledgers():
+    """Each redo row on the page, keyed by ad and engine, is what the landings and requests say.
+
+    The last gated master per ad in a batch is the one that shipped. Earlier rows
+    are the rebuilds the page counts but does not score.
+    """
+    import json
+    brands = {"orchard": "Orchard Hill Coffee", "lantern": "Lantern Street",
+              "harbor": "Harbor Lane Realty", "slowroad": "Slow Road Travel"}
+    labels = {"alibaba/wan-3.0/text-to-video": "Wan 3.0",
+              "bytedance/seedance-2.0/text-to-video": "Seedance 2.0",
+              "google/gemini-omni-flash": "Omni Flash"}
+    omni_engine = "google/gemini-omni-flash"
+
+    def rows(batch, name):
+        out = []
+        for line in open(os.path.join(ROOT, "shoots", batch, name)):
+            if line.strip():
+                out.append(json.loads(line))
+        return out
+
+    def shipped(batch):
+        last = {}
+        for row in rows(batch, "landings.jsonl"):
+            if row.get("kind") == "gated master":
+                last[row["ad"]] = row
+        return last
+
+    def reading(row):
+        mouth = row["mouth"]
+        status = mouth.split()[0]
+        lag = mouth.split("lag ")[1].split(",")[0].split(";")[0].strip()
+        lag = lag.replace("+0.00", "0.00").replace("-0.00", "0.00")
+        eye = ", eye approved" if "eye approved" in mouth else ""
+        return f"{status}, {lag} s{eye}"
+
+    def version(row):
+        return "v" + re.search(r"-final-v(\d+)\.mp4$", row["master"]).group(1)
+
+    def renders(batches, ad, engine):
+        return sum(1 for b in batches for r in rows(b, "requests.jsonl")
+                   if r["scene"].startswith(ad + "-") and r.get("engine") == engine)
+
+    def table(readme, first_cell):
+        block = readme.split("\n| " + first_cell + " |")[1].split("\n\n")[0]
+        lines = ("| " + first_cell + " |" + block).split("\n")
+        return [[c.strip() for c in line.strip().strip("|").split("|")]
+                for line in lines if line.startswith("|") and not line.startswith("|:")]
+
+    winner, omni = shipped("ads5"), shipped("ads6-omni")
+    assert sorted(winner) == sorted(omni) == sorted(brands), (sorted(winner), sorted(omni))
+    for row in list(winner.values()) + list(omni.values()):
+        assert row["captions"] == "PASS 5 cues" and row["drift_ms"] == 0, row
+    # the engine behind each ad's winner leg is whatever the last round requested for it
+    engines = {}
+    for r in rows("ads5", "requests.jsonl"):
+        engines[r["scene"].split("-")[0]] = r["engine"]
+    rounds = ("ads3", "ads4", "ads5")
+
+    readme = open(os.path.join(ROOT, "README.md")).read()
+    orchard = {r[0]: r[1:] for r in table(readme, "Process record, Orchard Hill Coffee")}
+    assert orchard["Process record, Orchard Hill Coffee"] == [labels[engines["orchard"]], "Omni Flash"]
+    assert orchard["Scene renders in the ledger across the rounds, re-rolls included"] == [
+        str(renders(rounds, "orchard", engines["orchard"])),
+        str(renders(("ads6-omni",), "orchard", omni_engine))], orchard
+    assert orchard["Caption gate on the shipped master"] == ["PASS, 5 cues"] * 2
+    assert orchard["Closer video against its audio placement"] == ["0 ms"] * 2
+    assert orchard["Mouth sync on the shared closer"] == [reading(winner["orchard"]), reading(omni["orchard"])]
+    assert orchard["Master that shipped"] == [version(winner["orchard"]), version(omni["orchard"])]
+
+    others = table(readme, "The other three spots")[1:]
+    assert [c[0].split(", ")[0] for c in others] == ["Lantern Street", "Harbor Lane Realty", "Slow Road Travel"], others
+    for cells in others:
+        brand, engine_label = cells[0].split(", ")
+        ad = {v: k for k, v in brands.items()}[brand]
+        assert engine_label == labels[engines[ad]], cells
+        counts = f"{renders(rounds, ad, engines[ad])} and {renders(('ads6-omni',), ad, omni_engine)}"
+        assert cells[1] == counts or cells[1].startswith(counts + ","), (cells, counts)
+        assert reading(winner[ad]) == reading(omni[ad]) == cells[2], (cells, winner[ad]["mouth"], omni[ad]["mouth"])
+        assert cells[3] == f"{version(winner[ad])} and {version(omni[ad])}", cells
+
+
+def test_system_map_steps_match_the_process_table():
+    """The map and the process table name the same seven steps in the same order."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("render_map", os.path.join(ROOT, "tools", "render_map.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    drawn = [step[0] for step in mod.STEPS]
+    readme = open(os.path.join(ROOT, "README.md")).read()
+    table = readme.split("| Step | What it has to prove")[1].split("\n\n")[0].split("\n")[2:]
+    written = [row.split("|")[1].strip() for row in table if row.startswith("|")]
+    assert written == drawn, (written, drawn)
+
+
 if __name__ == "__main__":
     sys.exit(_main())
