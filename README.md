@@ -85,7 +85,7 @@ Four invented-brand spots were shot again after I kept rejecting boards. I revie
 
 <table>
   <tr>
-    <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-seedance2-orchard.gif" alt="Orchard Hill Coffee redone, Seedance 2.0" width="100%"><br><b>Orchard Hill Coffee, Seedance 2.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-seedance2-orchard.mp4">&#9654; with sound</a></td>
+    <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-seedance2-orchard.gif" alt="Orchard Hill Coffee redone, Seedance 2.0" width="100%"><br><b>Orchard Hill Coffee, Seedance 2.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-seedance2-orchard.mp4">&#9654; with sound</a></td>
     <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-omni-orchard.gif" alt="Orchard Hill Coffee redone, Omni Flash" width="100%"><br><b>Orchard Hill Coffee, Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-omni-orchard.mp4">&#9654; with sound</a></td>
   </tr>
 </table>
@@ -100,21 +100,21 @@ Four invented-brand spots were shot again after I kept rejecting boards. I revie
 
 <table>
   <tr>
-    <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-wan3-lantern.gif" alt="Lantern Street redone, Wan 3.0" width="100%"><br><b>Lantern Street, Wan 3.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-wan3-lantern.mp4">&#9654; with sound</a></td>
+    <td width="50%" align="center" valign="top"><a name="winner-lantern"></a><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-wan3-lantern.gif" alt="Lantern Street redone, Wan 3.0" width="100%"><br><b>Lantern Street, Wan 3.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-wan3-lantern.mp4">&#9654; with sound</a></td>
     <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-omni-lantern.gif" alt="Lantern Street redone, Omni Flash" width="100%"><br><b>Lantern Street, Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-omni-lantern.mp4">&#9654; with sound</a></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-wan3-harbor.gif" alt="Harbor Lane Realty redone, Wan 3.0" width="100%"><br><b>Harbor Lane Realty, Wan 3.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-wan3-harbor.mp4">&#9654; with sound</a></td>
+    <td width="50%" align="center" valign="top"><a name="winner-harbor"></a><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-wan3-harbor.gif" alt="Harbor Lane Realty redone, Wan 3.0" width="100%"><br><b>Harbor Lane Realty, Wan 3.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-wan3-harbor.mp4">&#9654; with sound</a></td>
     <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-omni-harbor.gif" alt="Harbor Lane Realty redone, Omni Flash" width="100%"><br><b>Harbor Lane Realty, Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-omni-harbor.mp4">&#9654; with sound</a></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-seedance2-slowroad.gif" alt="Slow Road Travel redone, Seedance 2.0" width="100%"><br><b>Slow Road Travel, Seedance 2.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-seedance2-slowroad.mp4">&#9654; with sound</a></td>
+    <td width="50%" align="center" valign="top"><a name="winner-slowroad"></a><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-seedance2-slowroad.gif" alt="Slow Road Travel redone, Seedance 2.0" width="100%"><br><b>Slow Road Travel, Seedance 2.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-seedance2-slowroad.mp4">&#9654; with sound</a></td>
     <td width="50%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-omni-slowroad.gif" alt="Slow Road Travel redone, Omni Flash" width="100%"><br><b>Slow Road Travel, Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-omni-slowroad.mp4">&#9654; with sound</a></td>
   </tr>
 </table>
@@ -235,7 +235,7 @@ Four engines ran the same five briefs with the audience written into every promp
     <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-a0-orchard.gif" alt="Orchard Hill Coffee, HeyGen, the baseline" width="100%"><br><b>A0 &middot; HeyGen, the baseline.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-a0-orchard.mp4">&#9654; with sound</a></td>
     <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-omni-orchard.gif" alt="Orchard Hill Coffee, Omni Flash" width="100%"><br><b>B1 &middot; Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-omni-orchard.mp4">&#9654; with sound</a></td>
     <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-wan3-orchard.gif" alt="Orchard Hill Coffee, Wan 3.0" width="100%"><br><b>B2 &middot; Wan 3.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-wan3-orchard.mp4">&#9654; with sound</a></td>
-    <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-seedance2-orchard.gif" alt="Orchard Hill Coffee, Seedance 2.0" width="100%"><br><b>B3 &middot; Seedance 2.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-seedance2-orchard.mp4">&#9654; with sound</a></td>
+    <td width="25%" align="center" valign="top"><a name="winner-orchard"></a><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-seedance2-orchard.gif" alt="Orchard Hill Coffee, Seedance 2.0" width="100%"><br><b>B3 &middot; Seedance 2.0, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-seedance2-orchard.mp4">&#9654; with sound</a></td>
   </tr>
 </table>
 
@@ -251,13 +251,24 @@ Orchard Hill Coffee sells morning energy and craving, so its panel gates gesture
 
 Re-run on 2026-09-05 against the released Seedance master, face level 114.5, eye rejection 7.69 and background clutter 6.57 came back exactly, gesture 0.667 and scene 6.78 within probe scatter. Any row reproduces with `python3 probes/<probe>.py <master.mp4>`, and the redo's probe outputs ship in [`shoots/ads6-omni/probe-outputs/`](shoots/ads6-omni/probe-outputs/).
 
+The same four engines shot Quiet Hours, a brief that sells permission to rest, and here the premium baseline swept the calm rows.
+
+<table>
+  <tr>
+    <td width="25%" align="center" valign="top"><a name="winner-quiet"></a><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-a0-quiet.gif" alt="Quiet Hours, HeyGen, the WINNER" width="100%"><br><b>A0 &middot; HeyGen, the WINNER.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-a0-quiet.mp4">&#9654; with sound</a></td>
+    <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-omni-quiet.gif" alt="Quiet Hours, Omni Flash" width="100%"><br><b>B1 &middot; Omni Flash.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-omni-quiet.mp4">&#9654; with sound</a></td>
+    <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-wan3-quiet.gif" alt="Quiet Hours, Wan 3.0" width="100%"><br><b>B2 &middot; Wan 3.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-wan3-quiet.mp4">&#9654; with sound</a></td>
+    <td width="25%" align="center" valign="top"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-seedance2-quiet.gif" alt="Quiet Hours, Seedance 2.0" width="100%"><br><b>B3 &middot; Seedance 2.0.</b> <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-seedance2-quiet.mp4">&#9654; with sound</a></td>
+  </tr>
+</table>
+
 | Spot | The feeling it sells, and the row that gates | WINNER | Why |
 |:---|:---|:---|:---|
-| Orchard Hill Coffee | Morning craving, gesture energy upward | Seedance 2.0 | Three rows: cleanest eye read, steadiest face, tie for calmest scene |
-| Lantern Street | Three a.m. relief, clutter down | Wan 3.0 | Three rows: calmest scene, steadiest face, the only system banner legible on the phone |
-| Harbor Lane Realty | Neighborhood warmth, gesture upward | Wan 3.0 | Three-way tie on rows, so the gated row decides: biggest wave, richest staging |
-| Quiet Hours | Permission to rest, gesture flipped so calm wins | HeyGen, the premium baseline | Sweeps the four calm rows. This is where the router pays up |
-| Slow Road Travel | Wanderlust, gesture upward | Seedance 2.0 | Three rows: cleanest eye read, calmest frame, steadiest face against Wan's bigger motion |
+| Orchard Hill Coffee | Morning craving, gesture energy upward | [Seedance 2.0](#winner-orchard) | Three rows: cleanest eye read, steadiest face, tie for calmest scene |
+| Lantern Street | Three a.m. relief, clutter down | [Wan 3.0](#winner-lantern) | Three rows: calmest scene, steadiest face, the only system banner legible on the phone |
+| Harbor Lane Realty | Neighborhood warmth, gesture upward | [Wan 3.0](#winner-harbor) | Three-way tie on rows, so the gated row decides: biggest wave, richest staging |
+| Quiet Hours | Permission to rest, gesture flipped so calm wins | [HeyGen, the premium baseline](#winner-quiet) | Sweeps the four calm rows. This is where the router pays up |
+| Slow Road Travel | Wanderlust, gesture upward | [Seedance 2.0](#winner-slowroad) | Three rows: cleanest eye read, calmest frame, steadiest face against Wan's bigger motion |
 
 No engine sweeps the catalogue.
 
