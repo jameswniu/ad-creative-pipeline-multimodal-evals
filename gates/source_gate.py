@@ -14,7 +14,7 @@ can be argued about separately.
   end_ratio    mean abs frame diff over the final 1.5s divided by the same over the middle
                60% of the clip. Robotic settle = ratio far below 1.
   loop_jump    mean abs frame diff between the last frame and the first frame, the size of
-               the restart teleport when the file loops on the glass.
+               the restart teleport when the file loops.
 """
 import subprocess, sys, tempfile, os, glob
 import numpy as np

@@ -6,7 +6,7 @@ This is the longest document here because it is the actual subject. The render p
 
 ---
 
-> This copy of the evals document travels with the ad pipeline. It ships the ten probes the ad panels and gates actually read, so the derived count here is ten of ten. The stories below about matting, seams and the light-field render come from the wider battery those probes were born in, and are kept because the lessons are the same.
+The ten probes shipped here were calibrated in a wider battery before this pipeline ran. The record below keeps the lessons those instruments carry, and the labelled rows that bracket them ship in [`../evals/labels.csv`](../evals/labels.csv).
 
 ## Why taste has to become code
 
@@ -24,13 +24,10 @@ Verdicts come first, in plain language, on real takes. They accumulate into labe
 
 | set | size | what it holds |
 |---|---|---|
-| Labelled stills | 113 | curated by hand, one album, live-read rather than hardcoded |
-| Labelled videos | 67 | the visual bar, a sliding recent window |
-| Frame-level identity labels | 174 records | per-still `her` / `not_her` (115 / 59 in the current pass) |
-| A/B verdict log | 677 records | pairwise comparisons |
-| Render ledger | 14 renders | 7 kept, 3 rejected, 4 unrated |
-
-The identity label set was re-passed after growth: an earlier version held 171 records (113 / 58). Both versions are kept, because the delta between passes is itself information.
+| Labelled exemplars | 48 rows | [`../evals/labels.csv`](../evals/labels.csv), the pass and reject exemplars behind the ten gating thresholds, 7 re-measured from shipped pixels and 41 attested from the derivation notes |
+| Judge calibration | 42 scenes | [`../evals/judge-calibration.json`](../evals/judge-calibration.json), 16 FAIL and 26 PASS, labelled by eye before the judge ran |
+| Lip-sync labels | 8 | the closer masters the mouth probe was scored against |
+| Ledgers | 15 governed runs | every request and landing under [`../shoots/`](../shoots/), append-only |
 
 Nothing in this repository treats a label as noise to be smoothed. The labels are the only ground truth in the building.
 
@@ -92,9 +89,9 @@ The axis that mattered was **rest**, not pitch. She never stopped talking: 11.4 
 
 The general lesson is not "check the model". It is that a pipeline which only ever measures its output against **thresholds** cannot detect a defect that shifts the whole output distribution. Something has to compare the artifact to the source it is imitating.
 
-**A confident number from a region with no information is worse than no number.** A backdrop-motion probe reported "24 px of camera travel, 0 direction reversals" on three separate clips. The reading was identical every time because the sampled region was a featureless black field: with no texture, every candidate shift ties at zero residual, and `min()` returns the first, which is the edge of the search range. The probe was reporting its own search boundary as a measurement.
+**A confident number from a region with no information is worse than no number.** The replay probe once cleared a clip on a control of 0.6. The side bands it compared were nearly static, so every frame matched every other frame trivially, and the reading came back as no reversal on a take that ping-ponged at 80 seconds. A person caught it. The probe was reporting the emptiness of its own sample as a measurement.
 
-The fix is not a better correlation. It is a confidence gate: measure whether the region carries signal at all, and emit INCONCLUSIVE when it does not. The repository's older `drift_probe` already does this and says so on textureless corners. The new one had to relearn it.
+The fix is not a better correlation. It is a confidence gate: measure whether the region carries signal at all, and refuse to rule when it does not. `mirror_probe.py` now reports UNJUDGEABLE below `CONTROL_FLOOR`, and that floor is bracketed in `labels.csv` by a frozen control on one side and a live take on the other.
 
 Both failures share a shape worth naming: **a probe that cannot fail is not a probe.** One passed everything because it compared nothing external; the other passed everything because it always returned the same number. Neither was miscalibrated. Both were structurally incapable of disagreeing.
 
@@ -102,18 +99,7 @@ Both failures share a shape worth naming: **a probe that cannot fail is not a pr
 
 Everything above is about metrics that were wrong: inverted, unstable, circular, or measuring the wrong physics. Each was found because a metric and a label disagreed, and a disagreement needs two parties.
 
-A missing metric has no second party. It cannot disagree with anything, so no amount of relabelling surfaces it.
-
-One shipped. The matte stage fills the background with pure black, and a look was chosen wearing a black top. Measured afterward on the delivered frame, her face cleared the fill by 134 levels of luma and her torso cleared it by **22**, so the body dissolved into the background and left a floating head. Twelve probes ran on that clip and every one passed. They were not broken. Eleven of them score the subject (face level, motion, jerk, timing, drift, hands, seams) and the twelfth scores the *backdrop*, which is a property of one side of the boundary rather than of the contrast across it. Nothing in the suite held both sides at once.
-
-The eye caught it in about a second, which is the usual ratio and not a comforting one.
-
-Two things follow, and only the second is a fix:
-
-1. The immediate repair is a separation check: torso band against fill, on the delivered frame. The replacement look measures 171 against a bar of 60.
-2. The general lesson is that **the fill colour and the wardrobe are one decision**, and the suite was organized as though they were two. Choosing black is simultaneously the strongest available separation for a lit face and the weakest for dark clothing. A probe taxonomy that scores "the subject" and "the background" as separate families will keep missing the class of defect that lives in the relationship between them.
-
-The honest counting rule from the top of this document applies to the fix as well: n=2 looks measured, which is enough to establish that the failure is real and not enough to establish how much of the library shares it. That gap is stated in [NOT-MEASURED.md](NOT-MEASURED.md) rather than closed with an estimate.
+A missing metric has no second party. It cannot disagree with anything, so no amount of relabelling surfaces it. The ten instruments here score the presenter, the scene and the timing, and each one answers only the question it was built to ask. What this pipeline does not measure is listed on the landing page, under where the claims stop, rather than closed with an estimate.
 
 ---
 
@@ -139,7 +125,7 @@ The voice pipeline is the cleanest example of the loop, because the defect was h
 
 ## What this does not claim
 
-The labelled sets are editorial judgement, from a single source. They are internally consistent and externally unvalidated, and a second labeller would be the single most valuable addition to this repository.
+The labelled sets are one labeller's judgement, mine, and they are internally consistent. A second labeller and an agreement score are the next calibration step.
 
 Sample sizes are small and stated as counts, never as rates: 15 labelled clips behind the surviving eye model, 5 draws behind the voice-drift figure, 7 evaluations behind the retired quality gate. A percentage computed on those denominators would imply a precision the data cannot support.
 

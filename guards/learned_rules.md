@@ -29,9 +29,9 @@ Keep entries short and phrased as things to CHECK. Anything longer belongs in
   `avatar_iii` the whole backdrop becomes a photograph while only the subject
   animates, so detail behind her reads as dead. `probes/bg_detail.py` measures
   this and its bar is 5.5, derived from a labelled pass at 4.27 and a reject at 7.05.
-- **A dark garment against a dark fill is one decision, not two.** Choosing the
-  matte fill and choosing the wardrobe together decide whether the torso survives
-  separation. This repository shipped a floating head before noticing that.
+- **A dark garment against a dark backdrop is one decision, not two.** Choose the
+  backdrop and the wardrobe together, so the presenter separates from the scene.
+  Check the torso against the scene, not only the face.
 - **Do not infer a property of a look from a single rejection.** Two clips from one
   look, one accepted and one rejected, measured within 3 percent on every term.
   The per-render draw was the variable. Re-roll the same look instead.

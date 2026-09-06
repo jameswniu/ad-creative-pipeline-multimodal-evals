@@ -4,7 +4,6 @@
 *.jpg
 *.jpeg
 *.webp
-*.quilt
 # synthesized audio and the subtitle track, which carries the full script text
 *.mp3
 *.wav
@@ -38,10 +37,11 @@ tools/pii_names.txt
 # exactly this directory and nothing else.
 !assets/
 !assets/**
-# samples/ is the synthetic colour+depth pair the pipeline defaults to. It has
-# to escape the blanket *.mp4 above the same way assets/ does, or `git add -A`
-# skips it in silence and the pipeline is unrunnable on every clone. That is
-# exactly what happened once; CI caught it because the runner had no local copy.
+# samples/ holds the two clips the replay probe's bracket re-measures, a frozen
+# control and a live take. It has to escape the blanket *.mp4 above the same way
+# assets/ does, or `git add -A` skips it in silence and derive.py fails on every
+# clone. That is exactly what happened once. CI caught it because the runner had
+# no local copy.
 !samples/
 !samples/**
 .pytest_cache/

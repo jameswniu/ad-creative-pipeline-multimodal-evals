@@ -17,7 +17,7 @@
 #
 # The OUT extension picks the format. .wav = LOSSLESS: ElevenLabs output_format=pcm_44100 (raw s16le,
 # 44.1k mono, no container) wrapped into WAV by ffmpeg with no re-encode. .mp3 = the legacy lossy
-# path, code unchanged. the author, 2026-08-30, judged by eye on the burgundy holoblack: the mp3 ->
+# path, code unchanged. the author, 2026-08-30, judged by eye on the burgundy closer take: the mp3 ->
 # libmp3lame -> mp3 chain is two lossy generations and synced worse than the PCM chain.
 #
 # Needs ELEVENLABS_API_KEY in env (never printed). Writes the winning draw to <out> and leaves

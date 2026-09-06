@@ -154,7 +154,7 @@ TEXTLIST="$TMPDIR_RUN/text.lst"
 while IFS= read -r f; do
   [ -f "$f" ] || continue
   case "$f" in
-    *.png|*.jpg|*.jpeg|*.webp|*.gif|*.mp4|*.mov|*.webm|*.wav|*.mp3|*.hop|*.quilt|*.pdf) continue ;;
+    *.png|*.jpg|*.jpeg|*.webp|*.gif|*.mp4|*.mov|*.webm|*.wav|*.mp3|*.pdf) continue ;;
   esac
   grep -Iq . "$f" 2>/dev/null && printf '%s\n' "$f" >> "$TEXTLIST"
 done < "$FILELIST"

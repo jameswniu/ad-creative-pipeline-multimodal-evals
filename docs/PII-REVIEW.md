@@ -57,7 +57,7 @@ Dismissed by hand, per the instruction in the reviewer's own output. Not by loos
 | "reference to a specific female subject" | the generated character, disclosed as generated in the README | dismissed |
 | "author's full name" | the byline on a portfolio repository, deliberate | dismissed |
 | "verbatim quotation of private feedback" | self-quoted words, in the author's own repository | dismissed |
-| "personal account usage and cost" | published deliberately, in credits and never in currency, see NOT-MEASURED.md | dismissed |
+| "personal account usage and cost" | the author's own vendor spend, published deliberately as round dollars and a credit usage count in the cost table, with no account identifiers, plan names or remaining balances | dismissed |
 | "internal incident history" | the documented reasoning behind each threshold, which is the artifact | dismissed |
 | "reference to an unnamed second private repository" (raised twice, once per companion project) | both are credited on purpose and named nowhere; the withheld name is the published decision, so there is no identifier present to leak | dismissed |
 | "describes a consent-gate workflow requiring a two-minute training video of a real person" | describes the gate and the footage it requires, and identifies nobody; documenting that the gate exists, and that no agent may clear it, is the entire point of mentioning it | dismissed |

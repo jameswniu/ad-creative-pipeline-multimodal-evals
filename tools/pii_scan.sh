@@ -151,7 +151,7 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   case "$f" in
     *.png|*.jpg|*.jpeg|*.webp|*.gif|*.heic|*.tif|*.tiff|*.mp4|*.mov|*.m4v|*.webm\
-    |*.wav|*.mp3|*.m4a|*.aac|*.flac|*.hop|*.quilt|*.pdf)
+    |*.wav|*.mp3|*.m4a|*.aac|*.flac|*.pdf)
       printf '%s\n' "$f" >> "$MEDIALIST"; continue ;;
   esac
   if grep -Iq . "$f" 2>/dev/null; then

@@ -35,7 +35,7 @@ signal. Two detectors follow, and REPEAT is the sensitive one:
      never a pass.
   2. MATCHED SPANS. Controls compare frames the SAME distance apart as the test does.
      Comparing a 3-frame gap against a 1-frame baseline made a true single take fail its own
-     control earlier that night (see seam_check.py, same lesson).
+     control earlier that night.
 
 Her face is excluded from the scene measurement on purpose: a mouth is periodic, and speech
 periodicity reads as a loop if you let it into the band. That false positive flagged a clip

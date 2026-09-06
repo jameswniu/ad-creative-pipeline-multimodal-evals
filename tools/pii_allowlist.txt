@@ -44,7 +44,6 @@ README.md|presence-or-routine-prose
 guards/ship_gate.sh|wall-clock-time
 
 # SAMPLE_TIMES is a tuple of frame indices for probe sampling, not a cron.
-probes/drift_probe.py|cron-expression
 
 # The copyright line in the license, and the license reference in the README
 # byline. A license with no copyright holder is not a license, so this name is
@@ -75,12 +74,9 @@ NOTICE|owner-identity-token
 # under its own vendor-prefixed label. Reviewed 2026-07-31.
 README.md|uuid
 
-# Stage detail moved out of README.md into docs/PIPELINE.md on 2026-08-19.
 # Same two findings, same reviewed content, new path. The uuid is the public
 # GitHub attachment URL for the narration clip; the behavioural hit is the
 # tier-comparison prose. Both were already allowed above for README.md.
-docs/PIPELINE.md|uuid
-docs/PIPELINE.md|presence-or-routine-prose
 
 # the ad pipeline export: an API header name with an env var behind it, a retry cadence, and ad copy that says every morning
 gates/voice_take.sh|vendor-api-key-header

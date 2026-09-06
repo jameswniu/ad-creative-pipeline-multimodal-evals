@@ -53,9 +53,10 @@ CEILING = "ceiling"   # value <= C passes; rejects sit ABOVE the constant
 FLOOR = "floor"       # value >= C passes; rejects sit BELOW the constant
 
 # Each gate declares the AXIS it draws labels from. Two constants in one module
-# are not the same axis just because they share a unit: separation_probe's
-# FILL_MAX (a segmentation cutoff) and NEAR_FILL (a band width) are both in luma
-# and are unrelated, and matching on unit alone let one label pair derive both.
+# are not the same axis just because they share a unit: mirror_probe's
+# REPEAT_REJECT (a share of the unrelated-frame distance) and MIRROR_REJECT (a
+# share of the matched-span control) are both shares and are unrelated, and
+# matching on unit alone would let one label pair derive both.
 #
 # gating=False means the constant shapes a measurement but cannot by itself
 # refuse a clip. Those are scored and printed, but kept out of the headline count.
@@ -73,8 +74,7 @@ GATES = [
     ("mirror_probe",     "CONTROL_FLOOR",  "replay_signal",   FLOOR,   1.0,  True),
     ("mirror_probe",     "REPEAT_REJECT",  "repeat_distance", FLOOR,   1.0,  True),
     ("mirror_probe",     "MIRROR_REJECT",  "replay_distance", FLOOR,   1.0,  True),
-    # Not verdict thresholds. FILL_MAX segments the matte and NEAR_FILL sets a
-    # band width. sync_probe's LAG_MAX is documented as a DISCLOSURE that must
+    # Not a verdict threshold. sync_probe's LAG_MAX is documented as a DISCLOSURE that must
     # never refuse a clip ("Report the number, never let it refuse a clip"),
     # which guards/ship_gate.sh honours by catching its exit 1. Counting it as a
     # gate overstated the derived tally, so it is scored but not counted.
@@ -83,14 +83,12 @@ GATES = [
 
 # How to re-measure a labelled frame, per probe.
 # Each takes (module, path, row). The row is passed because a measurement can
-# need a parameter the label carries: seam_check measures AT a join, and the two
-# seam axes come from one call.
+# need a parameter the label carries, such as a timestamp or which of two axes
+# one call returns, even though none of the probes shipped here needs it yet.
 RECOMPUTE = {
     "bg_detail": lambda m, path, row: m.detail(path),
     "scene_simplicity": lambda m, path, row: m.measure(path),
     "mirror_probe": lambda m, path, row: m.control(path),
-    "seam_check": lambda m, path, row: m.measure(path, 2.5)[
-        0 if row["axis"] == "seam_picture" else 1],
 }
 
 
@@ -102,18 +100,18 @@ RECOMPUTE = {
 #   frame from the start, or an image. Across macOS and the ubuntu runner these
 #   land within 0.016, so a small absolute window holds them.
 #
-#   A SEEK to a timestamp. mirror_probe and seam_check ask for the frame at t.
-#   Which frame that is depends on the build's seeking and keyframe handling, so
-#   the two platforms are not always measuring the same picture. Measured on this
-#   repo's own fixtures: the control distance moved 545.5 to 539.6 (1.1%) and the
-#   luma step 5.38 to 5.03 (6.5%). That is not decode noise on a pixel, it is a
-#   different frame, and no tolerance makes it exact. A 10% window says what these
-#   rows actually promise; a real threshold drift moves them far further.
+#   A WHOLE-CLIP decode at a fixed rate. mirror_probe resamples the stream to 10
+#   frames a second and compares frames a third of the clip apart, so a build that
+#   drops or duplicates a frame at the resample is measuring a slightly different
+#   pair. Measured on the earlier fixtures: the control distance moved 545.5 to
+#   539.6 (1.1%) between macOS and the ubuntu runner. That is not decode noise on
+#   a pixel, it is a different frame, and no tolerance makes it exact. A 10% window
+#   says what these rows actually promise, and a real threshold drift moves them
+#   far further.
 TOLERANCE = {
     "bg_detail": ("abs", 0.05),
     "scene_simplicity": ("abs", 0.05),
     "mirror_probe": ("rel", 0.10),
-    "seam_check": ("rel", 0.10),
 }
 
 
@@ -221,7 +219,7 @@ def main():
             got = RECOMPUTE[probe](mod, path, r)
             # 0.05, not 0.02, and the number is measured rather than guessed.
             # These metrics decode through ffmpeg, and swscale is not identical
-            # across builds: look-still.jpg reads 3.035 on macOS and 3.051 on the
+            # across builds: one labelled still read 3.035 on macOS and 3.051 on the
             # ubuntu runner. A 0.016 gap failed a 0.02 window, which is how this
             # was found.
             #

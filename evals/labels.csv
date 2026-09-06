@@ -30,10 +30,10 @@ bg_detail,take3-final-pro,pass,3.61,bg_gradient,withheld,plain bedroom wall + wa
 bg_detail,R2-sunrise-beach,reject,7.05,bg_gradient,withheld,
 bg_detail,R1-flower-stall,reject,11.64,bg_gradient,withheld,a wall of hundreds of roses and tulips
 bg_detail,R3-golden-florist,reject,12.06,bg_gradient,withheld,
-bg_detail,assets/look-still.jpg,pass,1.98,bg_gradient,assets/look-still.jpg,shipped stage-3 look; side bands are real background
-bg_detail,assets/render-frame.jpg,out-of-domain,1.36,bg_gradient,assets/render-frame.jpg,side bands are 87% flat pillarbox; measures padding not backdrop
-bg_detail,assets/hologram-full.mp4,out-of-domain,2.40,bg_gradient,assets/hologram-full.mp4,side bands are 82% flat pillarbox
-bg_detail,assets/stage-nobg.jpg,out-of-domain,5.43,bg_gradient,assets/stage-nobg.jpg,background already removed; the question does not apply
+bg_detail,assets/exemplar-slowroad-seedance-10s.jpg,pass,2.76,bg_gradient,assets/exemplar-slowroad-seedance-10s.jpg,"shipped master, Slow Road Travel on Seedance 2.0 at 10 s. Side bands are sea and sky, a real background"
+bg_detail,assets/exemplar-lantern-wan3-3s.jpg,out-of-domain,1.48,bg_gradient,assets/exemplar-lantern-wan3-3s.jpg,"shipped master, Lantern Street on Wan 3.0 at 3 s. Side bands are an underexposed hallway, so low detail here is darkness, not simplicity"
+bg_detail,assets/endcard-orchard-seedance.jpg,out-of-domain,2.32,bg_gradient,assets/endcard-orchard-seedance.jpg,"end card of the Orchard Hill Coffee master. Type on a black field, the side bands hold the ends of the title and no backdrop"
+bg_detail,assets/endcard-harbor-wan3.jpg,out-of-domain,1.96,bg_gradient,assets/endcard-harbor-wan3.jpg,"end card of the Harbor Lane Realty master. Type on a black field, there is no backdrop to measure"
 scene_simplicity,r3,pass,2.68,scene_gradient,withheld,"human verdict ""perfect"""
 scene_simplicity,b5c,marginal,7.51,scene_gradient,withheld,"human verdict ""kinda ok""; see KNOWN TENSION above"
 scene_simplicity,T6,reject,9.50,scene_gradient,withheld,"human verdict ""worst"""
@@ -63,13 +63,13 @@ level_probe,iv-standard-face-alt,pass,7.90,face_level,withheld,the conflicting f
 level_probe,iii-night-face,reject,22.00,face_level,withheld,avatar_iii raw on a hard-rim night look
 level_probe,iv-standard-relation,pass,10.30,relation_level,withheld,the standard I set
 level_probe,iii-night-relation,reject,24.00,relation_level,withheld,avatar_iii raw on a hard-rim night look
-scene_simplicity,assets/look-still.jpg,pass,3.03,scene_gradient,assets/look-still.jpg,shipped as the stage-3 look on the landing page; accepted output
+scene_simplicity,assets/exemplar-slowroad-seedance-10s.jpg,pass,3.51,scene_gradient,assets/exemplar-slowroad-seedance-10s.jpg,"shipped master, Slow Road Travel on Seedance 2.0 at 10 s. The eye approved it and it was delivered"
 coherence_probe,r16-human-anchor,pass,0.116,rest_fraction,withheld,eye verified band 0.10 to 0.17
 coherence_probe,human-bakery,pass,0.106,rest_fraction,withheld,the tune-down round measurably raised it
 coherence_probe,smooth-bakery,reject,0.065,rest_fraction,withheld,best of the rejects
 coherence_probe,smooth-beach,reject,0.007,rest_fraction,withheld,called robotic
 coherence_probe,regen-beach,reject,0.000,rest_fraction,withheld,called robotic
 coherence_probe,calm-wave,out-of-domain,0.130,rest_fraction,withheld,KNOWN CONFOUND in the probe's own docstring: rejected on another axis while passing rest at 0.11 to 0.15
-mirror_probe,frozen-control,reject,0.20,replay_signal,samples/frozen-control.mp4,one frame held for 40s; no signal by construction
-mirror_probe,live-take,pass,545.50,replay_signal,assets/hologram-full.mp4,a real take with a moving scene
+mirror_probe,frozen-control,reject,0.7,replay_signal,samples/frozen-control-slowroad.mp4,"one frame of the Slow Road master held for 40 s, no signal by construction"
+mirror_probe,live-take,pass,6982.6,replay_signal,samples/exemplar-harbor-wan3-live.mp4,"the first 16 s of the Harbor Lane Realty master on Wan 3.0, a real take with a moving scene"
 mirror_probe,static-band-incident,reject,0.60,replay_signal,withheld,recorded in the probe's docstring: a control of 0.6 exonerated a clip that ping-ponged at t=80
