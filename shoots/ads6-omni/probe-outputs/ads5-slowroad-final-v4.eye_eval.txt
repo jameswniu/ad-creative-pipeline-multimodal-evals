@@ -1,0 +1,1 @@
+EYE PASS: bg 4.27 (max 4.5) | asym 0.439 (max 0.22) | offset 0.363 (max 0.13)

@@ -6,9 +6,9 @@
   <img alt="ad versions: 28, across 4 video engines" src="https://img.shields.io/badge/ad_versions-28_across_4_engines-0ea5e9?style=flat-square&labelColor=0f172a">
   <img alt="spec ads: 10, for real products" src="https://img.shields.io/badge/spec_ads-10_for_real_products-164e63?style=flat-square&labelColor=0f172a">
   <img alt="spend: every render gated first" src="https://img.shields.io/badge/spend-every_render_gated_first-164e63?style=flat-square&labelColor=0f172a">
-  <img alt="graded by hand: 113 stills, 67 clips" src="https://img.shields.io/badge/graded_by_hand-113_stills_%C2%B7_67_clips-164e63?style=flat-square&labelColor=0f172a">
+  <img alt="graded by hand: 48 exemplars, 42 scenes" src="https://img.shields.io/badge/graded_by_hand-48_exemplars_%C2%B7_42_scenes-164e63?style=flat-square&labelColor=0f172a">
   <img alt="thresholds traced to those grades: 10 of 10, and 10 of 10 named gating thresholds derived from labelled exemplars" src="https://img.shields.io/badge/thresholds_traced_to_grades-10%2F10_derived-164e63?style=flat-square&labelColor=0f172a">
-  <img alt="license: GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-164e63?style=flat-square&labelColor=0f172a">
+  <img alt="license: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-164e63?style=flat-square&labelColor=0f172a">
 </p>
 
 An agent wrote, voiced and rendered thirty-eight short video ads, for five invented brands and ten real products, on four AI video engines, with nobody watching. It was allowed to spend money only when checks built from hand-graded examples said the work was good enough. This page is how those checks were built.
@@ -23,7 +23,9 @@ An agent wrote, voiced and rendered thirty-eight short video ads, for five inven
 
 Three words repeat on this page, and they are one idea. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. The hard part was never making the video. It is deciding, with nobody in the room, whether the video is good enough to pay for. The three tiers split that decision into pieces small enough to build.
 
-The first tier is the skeleton and it stays put. The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the vibe evals are re-derived from a fresh golden set. The proof below comes from one ad production that ran end to end with nobody driving. Twenty-eight governed versions across five invented brands, then ten spec ads for real products, every render gated before a dollar moved.
+- The first tier is the skeleton and it stays put.
+- The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the vibe evals are re-derived from a fresh golden set.
+- The proof below comes from one ad production that ran end to end with nobody driving. Twenty-eight versions across five invented brands, then ten spec ads for real products, every render gated before a dollar moved.
 
 <table>
   <tr>
@@ -39,7 +41,11 @@ The first tier is the skeleton and it stays put. The other two are the parts you
 
 ## 1. Process evals
 
-Process evals check the trajectory, not the result. The industry name is process supervision. Every step has a contract, the contract is checked the moment the step runs, and a failed check stops the job before the next dollar is spent. The source of truth is the pipeline graph, an orchestration framework such as LangGraph in most stacks and plain scripts here, so this tier moves only when the scripts move. The exact scripts that ran are in this repository. The boards, batch drivers and ledgers are in [`shoots/`](shoots/). The board probe, caption gate and closer checks are in [`gates/`](gates/), the pixel probes in [`probes/`](probes/), the pre-spend guards in [`guards/`](guards/). The code map near the end says what each file is.
+Process evals check the trajectory, not the result. The industry name is process supervision.
+
+- Every step has a contract, the contract is checked the moment the step runs, and a failed check stops the job before the next dollar is spent.
+- The source of truth is the pipeline graph, an orchestration framework such as LangGraph in most stacks and plain scripts here. This tier moves only when the scripts move.
+- The exact scripts that ran are in this repository. Boards, batch drivers and ledgers in [`shoots/`](shoots/), the board probe, caption gate and closer checks in [`gates/`](gates/), the pixel probes in [`probes/`](probes/), the pre-spend guards in [`guards/`](guards/). The code map near the end says what each file is.
 
 | Step | What it has to prove before the next step may start | How it fails |
 |:---|:---|:---|
@@ -53,7 +59,12 @@ Process evals check the trajectory, not the result. The industry name is process
 
 ### The redo, as a ledger reads it
 
-Four invented-brand spots were shot again after the curator, the human on the loop who reviews every cut by eye, kept rejecting boards. The grammar that survived is the one he named. Open absurd at three or four times the volume, hand over the coherent model by the second line, and keep every quirk visual with nobody narrating it. Each spot shipped two ways, on the engine that won its panel in the four-engine race in section 3 and on an Omni Flash leg from the same boards, narrations, closers, beds and captions. The only variable between the columns is the engine. The [ledgers](shoots/) hold four rounds behind them, 16, 16, 12 and 15 scene requests, 59 in all, for eight shipped versions. Two of those rounds built four masters each and neither shipped.
+Four invented-brand spots were shot again after the curator, the human on the loop who reviews every cut by eye, kept rejecting boards.
+
+- The grammar that survived is the one he named. Open absurd at three or four times the volume, hand over the coherent model by the second line, and keep every quirk visual with nobody narrating it.
+- Each spot shipped two ways, on the engine that won its panel in the four-engine race in section 3 and on an Omni Flash leg from the same boards, narrations, closers, beds and captions. The only variable between the columns is the engine.
+- The [ledgers](shoots/) hold four rounds behind them, 16, 16, 12 and 15 engine requests, 59 in all, two of them music beds, for eight shipped versions.
+- Two of those rounds built four masters each and neither shipped.
 
 <table>
   <tr>
@@ -86,13 +97,26 @@ Every one of the eight masters passed the caption gate at five cues and held its
 
 ## 2. Outcome evals
 
-Outcome evals check the artifact against the facts and do not care how it got made. The industry name is outcome supervision, and in retrieval terms it is a groundedness check. The claim on screen is compared with the source it was pulled from, never with the model's confidence in it. In most stacks those facts arrive through retrieval, the RAG layer. Here they arrived through a pairwise research pass, one engine scanning the company's live pages and the other told to refute what it found. Either way the whole tier is re-derived when the brief changes.
+Outcome evals check the artifact against the facts and do not care how it got made. The industry name is outcome supervision, and in retrieval terms it is a groundedness check.
 
-For an ad, true means the claim a spot closes on is the claim the company actually makes, in its own current words. The words on screen are the words being spoken, and the words being spoken are the script. The caption gate checks the first half. A transcription diffed against the script before any render is paid for checks the second. A prop that carries the story reads in the delivered crop. And the online outcome, hook rate, hold rate and view-through, is a number only a live campaign produces, so everything offline is a proxy and is labelled one.
+- The claim on screen is compared with the source it was pulled from, never with the model's confidence in it.
+- In most stacks those facts arrive through retrieval, the RAG layer. Here they arrived through a pairwise research pass, one engine scanning the company's live pages and the other told to refute what it found.
+- Either way the whole tier is re-derived when the brief changes.
+
+For an ad, true means four things.
+
+- The claim a spot closes on is the claim the company actually makes, in its own current words.
+- The words on screen are the words being spoken, and the words being spoken are the script. The caption gate checks the first half. A transcription diffed against the script before any render is paid for checks the second.
+- A prop that carries the story reads in the delivered crop.
+- The online outcome, hook rate, hold rate and view-through, is a number only a live campaign produces. Everything offline is a proxy and is labelled one.
 
 ### Ten real products, and nothing bends to the render
 
-The invented brands were the easy case, because a story can bend to whatever the engine renders well. So the same loop ran against ten real, currently shipping AI products, all on Omni Flash at about sixty-three cents a scene. Thirty scenes across two batches, and each master was gated on caption timing, closer alignment and lip sync before it was allowed out. These are spec ads. They are not affiliated with, endorsed by, or produced for Google, OpenAI, Perplexity, Meta, xAI, Z.ai, Moonshot AI or Anthropic. None of these companies has seen them, and every tagline is written here.
+The invented brands were the easy case, because a story can bend to whatever the engine renders well. So the same loop ran against ten real, currently shipping AI products.
+
+- All ten shot on Omni Flash at about sixty-three cents a scene, thirty scenes across two batches.
+- Each master was gated on caption timing, closer alignment and lip sync before it was allowed out.
+- These are spec ads. They are not affiliated with, endorsed by, or produced for Google, OpenAI, Perplexity, Meta, xAI, Z.ai, Moonshot AI or Anthropic. None of these companies has seen them, and every tagline is written here.
 
 <table>
   <tr>
@@ -123,15 +147,22 @@ The first batch landed fifteen scenes on fifteen requests with zero content reje
 
 ## 3. Vibe evals
 
-Vibe evals are the tier everyone argues about, so this repo made them the most mechanical of the three. A vibe check, in practice, is a person watching a clip and saying good or not. Here the person did exactly that first, on 113 stills, 67 clips and 677 pairwise comparisons, and the verdicts were compiled into numbers a scheduler can enforce. The source of truth is that golden set plus the market's own bar: the vendor's premium baseline sits in the race as the A0 column. Change the audience and the tier is re-derived, because what good means has flipped.
+Vibe evals are the tier everyone argues about, so this repo made them the most mechanical of the three.
 
+- A vibe check, in practice, is a person watching a clip and saying good or not. Here the person did that first, on the 48 labelled exemplars behind the thresholds and the 42 eye-labelled scenes behind the judge, and the verdicts were compiled into numbers a scheduler can enforce.
+- The source of truth is that golden set plus the market's own bar. The vendor's premium baseline sits in the race as the A0 column.
+- Change the audience and the tier is re-derived, because what good means has flipped.
 - One probe battery for everything. A category picks which rows gate and which merely report, and that pick is what defines the category. The direction of good is set per audience, not per probe: a coffee ad reads gesture energy upward and a sleep ad flips the same instrument, because calm sells.
 - 10 of the 10 named gating thresholds in [`probes/`](probes/) sit between a labelled pass and a labelled reject. A tool re-measures the shipped pixels and refuses to stay green if the number does not come back.
 - The eye stays the apex judge. A language-model judge attaches a blind description and a flag to the strip as evidence and never holds the verdict.
 
 ### Four engines, five audiences, five panels
 
-Four engines ran the same five briefs with the audience written into every prompt, and the panels picked a different winner per audience. **Bold is the best reading in its row**, in that row's own direction, and the **WINNER takes the most rows**. When versions tie, the row the panel gates on decides. One spot in full, then the other four.
+Four engines ran the same five briefs with the audience written into every prompt, and the panels picked a different winner per audience.
+
+- Bold is the best reading in its row, in that row's own direction.
+- The WINNER takes the most rows. When versions tie, the row the panel gates on decides.
+- One spot in full, then the other four.
 
 <table>
   <tr>
@@ -152,6 +183,8 @@ Orchard Hill Coffee sells morning energy and craving, so its panel gates gesture
 | Scene simplicity, lower is calmer, reports | 7.37 | **6.7** | 8.10 | **6.7** |
 | Face level wander, lower is steadier, reports | 148.9 | 150.6 | 150.3 | **114.5** |
 
+Re-run on 2026-09-05 against the released Seedance master, face level 114.5, eye rejection 7.69 and background clutter 6.57 came back exactly, gesture 0.667 and scene 6.78 within probe scatter. Any row reproduces with `python3 probes/<probe>.py <master.mp4>`, and the redo's probe outputs ship in [`shoots/ads6-omni/probe-outputs/`](shoots/ads6-omni/probe-outputs/).
+
 | Spot | The feeling it sells, and the row that gates | WINNER | Why |
 |:---|:---|:---|:---|
 | Orchard Hill Coffee | Morning craving, gesture energy upward | Seedance 2.0 | Three rows: cleanest eye read, steadiest face, tie for calmest scene |
@@ -160,7 +193,15 @@ Orchard Hill Coffee sells morning energy and craving, so its panel gates gesture
 | Quiet Hours | Permission to rest, gesture flipped so calm wins | HeyGen, the premium baseline | Sweeps the four calm rows. This is where the router pays up |
 | Slow Road Travel | Wanderlust, gesture upward | Seedance 2.0 | Three rows: cleanest eye read, calmest frame, steadiest face against Wan's bigger motion |
 
-No engine sweeps the catalogue. Wan 3.0 takes the spots that turn on legible story text and composed calm. Seedance 2.0 takes the ones that turn on clean eyes and a steady face. The sleep brand routes to the premium baseline. Omni Flash wins no panel here and keeps its seat anyway, for native ambient audio and the freest human motion. Scored again after the redo, the router's answer became Orchard to Omni Flash, Lantern to Wan 3.0, Harbor to Omni Flash and Slow Road to Seedance 2.0. Omni pays its way where a clean frame beats the biggest gesture. The race is fair by construction, because the three challengers sit in one price class. A four-deep pool per spot costs a few dollars, which is what lets a platform serve each user the version that user responds to. All twenty versions are in the [media release](https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/tag/media-2026-08).
+No engine sweeps the catalogue.
+
+- Wan 3.0 takes the spots that turn on legible story text and composed calm.
+- Seedance 2.0 takes the ones that turn on clean eyes and a steady face.
+- The sleep brand routes to the premium baseline.
+- Omni Flash wins no panel here and keeps its seat anyway, for native ambient audio and the freest human motion.
+- Scored again after the redo, the router's answer became Orchard to Omni Flash, Lantern to Wan 3.0, Harbor to Omni Flash and Slow Road to Seedance 2.0. Omni pays its way where a clean frame beats the biggest gesture.
+- The race is fair by construction, because the three challengers sit in one price class. A four-deep pool per spot costs a few dollars, which is what lets a platform serve each user the version that user responds to.
+- All twenty versions are in the [media release](https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/tag/media-2026-08).
 
 | Version | Engine | What the Scenes Cost |
 |---|---|---|
@@ -185,17 +226,23 @@ The human was on the loop, not in it. The author wrote no scripts for this shoot
 - the rule that the most arresting beat opens the film
 - the rule that every human on screen is the same presenter
 
-The agent loop-engineered the rest, boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger. The loop itself is the industry's own, hypothesis, variations, tests, winners, run by an agent instead of a team. The evals were designed and calibrated before a single render was paid for.
+- The agent loop-engineered the rest, boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger.
+- The loop itself is the industry's own, hypothesis, variations, tests, winners, run by an agent instead of a team.
+- The evals were designed and calibrated before a single render was paid for.
 
 ## Code map
 
-Everything below ran. Vendor ids and Slack fields are replaced with `<id>` or dropped. Home directories sit behind `$SHOOT_ROOT`, `$RENDERS`, `$GATES` and `$PORTRAIT`. The pinned voice and avatar are read from environment variables, so the closer path needs an identity of your own before it will render.
+Everything below ran.
+
+- Vendor ids and Slack fields are replaced with `<id>` or dropped.
+- Home directories sit behind `$SHOOT_ROOT`, `$RENDERS`, `$GATES` and `$PORTRAIT`.
+- The pinned voice and avatar are read from environment variables, so the closer path needs an identity of your own before it will render.
 
 | Where | What it is |
 |:---|:---|
 | `shoots/ads2-redo/` | The race. Five briefs on three challenger engines, the baseline leg built beside them, 47 requests and 45 landings in the ledger |
 | `shoots/ads3/`, `ads4/`, `ads5/` | The redo rounds on the race winners' engines. The first two built masters that never shipped, the third shipped after up to seven rebuilds |
-| `shoots/ads6-omni/` | The Omni Flash leg of the redo from the boards that survived, with its panel scores |
+| `shoots/ads6-omni/` | The Omni Flash leg of the redo from the boards that survived, with its panel scores and the raw probe outputs for all eight redo masters |
 | `shoots/ads7-real/`, `ads8-real/` | The ten spec ads. Every board carries its positioning and the live page it was checked against |
 | `shoots/<batch>/boards.json` | The brief per spot: audience, quirk, how the middle beat escalates, narration, closer, bed, and for the spec ads the verified positioning |
 | `shoots/<batch>/build-*.sh` | The batch driver: normalise scenes, patch the assembly script, build every spot, master to the loudness standard |
@@ -212,7 +259,9 @@ Everything below ran. Vendor ids and Slack fields are replaced with `<id>` or dr
 
 ## The numbers
 
-10 of the 10 named gating thresholds in [`probes/`](probes/) are bracketed by a labelled pass and a labelled reject. [`evals/derive.py`](evals/derive.py) re-measures the shipped pixels and refuses to exit clean if a constant has drifted outside its own bracket. Its report is checked in CI, so a hand-typed count cannot go stale on this page:
+- 10 of the 10 named gating thresholds in [`probes/`](probes/) are bracketed by a labelled pass and a labelled reject.
+- [`evals/derive.py`](evals/derive.py) re-measures the shipped pixels and refuses to exit clean if a constant has drifted outside its own bracket.
+- Its report is checked in CI, so a hand-typed count cannot go stale on this page:
 
 ```
 10 of 10 NAMED gating thresholds are DERIVED from a labelled pass/reject pair on the same axis
@@ -230,10 +279,11 @@ python3 evals/derive.py
 ## What this does not claim
 
 - The golden set is one person's editorial judgement, internally consistent and externally unvalidated. A second labeller would be the single most valuable addition to this repository.
+- Only what ships here is claimed, the 48 labelled rows behind the thresholds and the 42 scenes behind the judge. The wider battery these probes came from was calibrated on a larger labelled history that stays with that project.
 - Sample sizes are counts, never rates: 15 governed runs, 42 calibration scenes, 8 lip-sync labels.
 - No live campaign has run, so hook rate, hold rate and view-through are unmeasured. Every outcome number here is offline.
 - The spec ads are unaffiliated. None of the eight companies has seen them.
 - Engine prices and product positioning are as of August 2026, when the shoots ran, and are not re-checked.
 - The pinned identity is not here. The voice id, avatar group and look ids are environment variables or `<id>` in the ledgers. The scripts read end to end, but the closer will not render without an identity of your own.
 
-The probes, the guards, the labelled exemplars and the derivation are in this repository. They came out of an earlier autonomous filmmaking pipeline by the same author, and the ad production on this page is one run through them. GPL-3.0.
+The probes, the guards, the labelled exemplars and the derivation are in this repository. They came out of an earlier autonomous filmmaking pipeline by the same author, and the ad production on this page is one run through them. Apache-2.0.

@@ -1,0 +1,1 @@
+EYE REJECT: bg 6.42 (max 4.5) | asym 0.504 (max 0.22) | offset 0.273 (max 0.13)
