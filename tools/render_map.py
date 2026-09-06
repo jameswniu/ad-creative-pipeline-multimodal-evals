@@ -15,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "assets", "system-map.svg")
 SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
 MONO = "ui-monospace,SFMono-Regular,Menlo,monospace"
-PALE, DIM, EDGE, CYAN, VIOLET, AMBER = "#f4ecdc", "#c4b69c", "#a8925a", "#5fae8f", "#d08a5e", "#d6bc7a"
+PALE, DIM, EDGE, CYAN, VIOLET, AMBER = "#f2efe9", "#a9a6a0", "#8f7a45", "#c9ccd1", "#d9a08c", "#d4b56a"
 W, H = 1200, 920
 
 STEPS = [
@@ -47,7 +47,7 @@ def text(x, y, s, size, fill, bold=False, mono=False, anchor="start", spacing=No
 
 def render():
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="System map: one loop of seven steps, board, render, closer, build, ad gates, ship gate, deliver, and the three tiers of evals that own the gates at each step.">',
-         '<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e1610"/><stop offset="100%" stop-color="#2a2018"/></linearGradient></defs>',
+         '<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#171615"/><stop offset="100%" stop-color="#1f1e1c"/></linearGradient></defs>',
          f'<rect width="{W}" height="{H}" fill="url(#bg)"/>', f'<rect x="0" y="0" width="7" height="{H}" fill="{CYAN}"/>']
     o.append(text(60, 58, "SYSTEM MAP", 22, CYAN, bold=True, mono=True, spacing=3))
     o.append(text(60, 104, "One loop, three tiers of gates", 40, PALE, bold=True))
@@ -67,7 +67,7 @@ def render():
         y = 216 + row * (ch + gap)
         for s, sz, b, m in ((title, 24, True, False), (detail, 22, False, False), (foot, 22, False, True)):
             fits(s, sz, cw, bold=b, mono=m)
-        o.append(f'<rect x="{x}" y="{y}" width="{cw}" height="{ch}" rx="10" fill="#33281f" fill-opacity=".9" stroke="{EDGE}"/>')
+        o.append(f'<rect x="{x}" y="{y}" width="{cw}" height="{ch}" rx="10" fill="#262422" fill-opacity=".9" stroke="{EDGE}"/>')
         o.append(f'<rect x="{x}" y="{y}" width="5" height="{ch}" rx="2.5" fill="{color}"/>')
         o.append(text(x + 18, y + 34, title, 24, PALE, bold=True))
         o.append(text(x + 18, y + 62, detail, 22, DIM))
@@ -78,7 +78,7 @@ def render():
     tw, th, tx0, ty = 352, 150, 60, 726
     for i, (name, color, lines) in enumerate(TIERS):
         x = tx0 + i * (tw + 14)
-        o.append(f'<rect x="{x}" y="{ty}" width="{tw}" height="{th}" rx="10" fill="#33281f" fill-opacity=".9" stroke="{EDGE}"/>')
+        o.append(f'<rect x="{x}" y="{ty}" width="{tw}" height="{th}" rx="10" fill="#262422" fill-opacity=".9" stroke="{EDGE}"/>')
         o.append(f'<rect x="{x}" y="{ty}" width="5" height="{th}" rx="2.5" fill="{color}"/>')
         fits(name, 24, tw, bold=True, mono=True)
         o.append(text(x + 18, ty + 36, name, 24, color, bold=True, mono=True, spacing=2))
