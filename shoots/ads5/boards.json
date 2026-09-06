@@ -1,0 +1,49 @@
+{
+ "doctrine": "the author 2026-08-26 evening: the ads4 literal cut was worse. Back to the Fonz-cut grammar and better: open ABSURD, intensity 3-4x, hit all neurons, front-load impact, then hand them the coherent model. Narration line 1 rides the absurdity, lines 2-3 say plainly what it is and what to do. Closers and their plain-ask lines reused from ads4 verbatim. No talking mouths under narration, no real logos, no black-void looks.",
+ "spots": {
+  "orchard": {
+   "engine": "bytedance/seedance-2.0/text-to-video",
+   "new_scenes": {
+    "a": "Dawn on a quiet suburban street. A curbside mailbox ERUPTS a thick rolling column of coffee-roast steam like a geyser, rattling on its post. Down the block, neighbors' heads snap around in unison, and a man in a bathrobe drops his newspaper and sprints across his lawn toward the mailbox. Nobody on camera speaks, mouths closed.",
+    "b": "The man flings the mailbox open and lifts out a steaming paper bag of coffee like treasure, hugging it to his chest with his eyes closed, and the steam wraps around his shoulders while the whole yard glows gold in morning light. Mouth closed, nobody speaks."
+   },
+   "reuse": {
+    "c": "../ads4/scenes/orchard-c/raw.mp4"
+   },
+   "narration": "When the roast is this fresh, the mailbox can't keep it quiet. Roasted the week it ships, delivered straight to your door. One cup, and Tuesday belongs to you."
+  },
+  "lantern": {
+   "engine": "alibaba/wan-3.0/text-to-video",
+   "new_scenes": {
+    "a": "Night interior, camera shaking with her. A woman in pajamas explodes down a dark staircase three steps at a time, phone flashlight strobing huge monstrous shadows across the walls, picture frames rattling as she passes, breath ragged, pure adrenaline. Nobody on camera speaks."
+   },
+   "reuse": {
+    "b": "../ads4/scenes/lantern-b/raw.mp4",
+    "c": "../ads4/scenes/lantern-c/raw.mp4"
+   },
+   "narration": "Three a.m. turns every thump into a break-in. One glance at the app and the house answers, doors locked, cameras clear, all is well. Go back to bed, the house keeps watch."
+  },
+  "harbor": {
+   "engine": "alibaba/wan-3.0/text-to-video",
+   "new_scenes": {
+    "a": "Bright suburban morning. A real-estate agent on a porch gives a huge genuine two-arm wave, and the ENTIRE street waves back at once, neighbors on every porch, a mail carrier, a dog walker whose dog lifts a paw, two kids on bikes, all waving toward a young couple arriving on the sidewalk, who look at each other amazed. Nobody on camera speaks, mouths closed.",
+    "b": "The agent swings the white picket gate wide and leads the young couple up the front path, all three laughing with their mouths closed, the gate swinging gently behind them, warm morning light down the street."
+   },
+   "reuse": {
+    "c": "../ads4/scenes/harbor-c/raw.mp4"
+   },
+   "narration": "Some streets already know your name. One agent, one street, every porch on it by heart. From first walkthrough to the crooked sticker, one person the whole way."
+  },
+  "slowroad": {
+   "engine": "bytedance/seedance-2.0/text-to-video",
+   "new_scenes": {
+    "a": "A slow vintage train drifts through golden countryside. The paper luggage tag on a suitcase at the rear open platform TEARS FREE and flies alongside the train like a small determined bird, swooping and diving in the wind, while a woman leans off the platform rail watching it go, grinning, hair streaming. Nobody speaks, mouth closed.",
+    "b": "A narrow market alley alive with motion, vendors and steam and bolts of fabric. She walks at half the crowd's speed through the middle while everyone around her passes in slight motion blur, and a small paper luggage tag swoops and weaves through the air above the stalls like a bird. Mouth closed, nobody speaks.",
+    "c": "Dusk at a clifftop bus stop above the sea. She sits on her suitcase watching the water, unhurried, and a small paper luggage tag glides down out of the sky and settles onto the suitcase beside her, perfectly still. Nobody on camera speaks."
+   },
+   "reuse": {},
+   "narration": "Somewhere out there, your luggage tag has bigger plans. Small groups, six seats, no rush, and the long way there. Book the slow one, and let the tag lead."
+  }
+ },
+ "guard": "Natural skin texture with visible pores and slight imperfections, documentary realism, no beauty smoothing, imperfect practical lighting, real micro-expressions, natural motion timing with small human hesitations. No readable on-screen text anywhere in frame, no logos, no brand marks. Keep hands either fully out of frame or large, simple and clearly articulated. NO narration, NO voiceover, NO captions, NO avatar or presenter, no music, natural ambient sound only. One single continuous live-action scene, about 5 seconds, subject centered, raw b-roll for an edit."
+}

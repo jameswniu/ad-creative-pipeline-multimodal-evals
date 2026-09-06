@@ -1,0 +1,82 @@
+{
+ "doctrine": "Five real AI products, spec ads, not affiliated with or endorsed by any of these companies. Omni Flash default (the author 2026-08-27). Absurd open at 3-4x, coherent model by line two, quirk visual and never narrated, mouths closed under narration, props in the middle third. Positioning verified pairwise 2026-08-27.",
+ "spots": {
+  "gemini": {
+   "brand": "Gemini",
+   "card": "Your personal AI assistant.",
+   "look": "<id>",
+   "positioning": "Google's personal AI assistant, hands-free, across everything you already use (verified: gemini.google.com)",
+   "quirk": "one lone sticky note refuses to fly, drifts down and lands neatly on the fridge",
+   "scenes": {
+    "a": "A suburban kitchen absolutely PLASTERED floor to ceiling with hundreds of small yellow sticky notes, on the cupboards, the fridge, the kettle, the man's own sleeves. He opens a cupboard and an avalanche of more notes pours out over him. He stands there buried to the waist, blinking, mouth closed. Nobody speaks.",
+    "b": "Every sticky note in the kitchen lifts off its surface at once and streams through the air in a bright ribbon toward the phone in his raised hand, the room going clean and calm behind them. One single note refuses, drifts lazily down, and settles neatly on the fridge door. His mouth stays closed. Nobody speaks.",
+    "c": "The same man sits in the now spotless kitchen with a coffee, phone face down on the table, shoulders dropped, looking out the window at the morning with a small satisfied breath. Mouth closed, nobody speaks."
+   },
+   "narration": "Your head has forty tabs open and not one of them is labelled. Gemini is Google's personal assistant, on your phone, hands free, across the apps you already use. Ask it once, and the notes take care of themselves.",
+   "closer": "Gemini, your personal AI assistant from Google. Ask it anything today. The pipeline behind this spot is public, link under the video.",
+   "bed": "Bright optimistic modern instrumental, warm synth pads, light plucked strings, clean and hopeful morning feeling, no vocals"
+  },
+  "chatgpt": {
+   "brand": "ChatGPT",
+   "card": "Help with the everyday.",
+   "look": "<id>",
+   "positioning": "Get help with everyday questions and ideas (verified: openai.com/chatgpt/overview)",
+   "quirk": "the snapped cobweb strand floats upward like a tiny surrender flag",
+   "scenes": {
+    "a": "A supermarket aisle. A man stands frozen mid-decision holding two identical jars, and he has clearly been there so long that a real cobweb has formed between his elbow and the shelf, dust settled on his shoulders, a shopping basket rusted at his feet. Other shoppers blur past him. His mouth is closed. Nobody speaks.",
+    "b": "Close on his free hand tapping a phone screen once. The cobweb snaps and a single strand floats upward, the dust lifts off his shoulder in the aisle light. His mouth stays closed. Nobody speaks.",
+    "c": "Evening kitchen, warm lamps. The same man slides a finished plate of food onto the table in front of two friends who are laughing, and sits down with them. Mouths closed, nobody on camera speaks."
+   },
+   "narration": "It is never the big decisions that eat the evening. ChatGPT helps with the ordinary stuff, the questions, the drafts, the endless small choices, in plain language. Ask it, and get your night back.",
+   "closer": "ChatGPT, help with everyday questions and ideas. Ask it tonight. The pipeline behind this spot is public, link under the video.",
+   "bed": "Warm relaxed acoustic instrumental, gentle piano and soft brushes, easy domestic evening feeling, no vocals"
+  },
+  "perplexity": {
+   "brand": "Perplexity",
+   "card": "The answer engine.",
+   "look": "<id>",
+   "positioning": "An answer engine that searches and synthesises with citations attached (verified: perplexity.ai hub, help centre)",
+   "quirk": "one page keeps floating after the rest have gone, upside down, and settles last",
+   "scenes": {
+    "a": "A home office at night. A woman opens a laptop and paper ERUPTS out of it like a geyser, hundreds of loose printed pages roaring up to the ceiling and raining down, burying the desk and her to the chest in seconds. She is wide eyed, mouth closed. Nobody speaks.",
+    "b": "The blizzard of paper reverses and compresses inward, all of it folding down into one single crisp page that lands flat in her open palm. One last page floats down after the others, upside down, and settles on top. Mouth closed, nobody speaks.",
+    "c": "She leans back in the quiet clean office holding the single page, reading it with a small nod, the lamp warm, the desk empty. Mouth closed, nobody speaks."
+   },
+   "narration": "Four hundred tabs, ten blue links, and still no answer. Perplexity is an answer engine: it reads the web and hands back the answer with its sources attached. One page, not four hundred.",
+   "closer": "Perplexity, the answer engine with its sources attached. Ask it your next question. The pipeline behind this spot is public, link under the video.",
+   "bed": "Cool focused modern instrumental, clean electric piano, subtle pulse, clear and confident night-work feeling, no vocals"
+  },
+  "metaai": {
+   "brand": "Meta AI",
+   "card": "Your personal agent.",
+   "look": "<id>",
+   "positioning": "Everyone will have an exceptionally capable personal agent, working on your behalf (verified: meta.com/thefutureisforeveryone)",
+   "quirk": "the scroll rolls up so fast it knocks a plant pot, which she catches without looking",
+   "scenes": {
+    "a": "A woman stands in her doorway holding the top of a paper to-do list that has unrolled down her hallway, out the front door, down the porch steps and along the pavement past three houses. She looks along it, mouth closed, entirely defeated. Nobody speaks.",
+    "b": "She slips on a pair of ordinary glasses and the enormous scroll rolls itself back up the street toward her in a rush, so fast that it knocks a plant pot off the porch rail, which she catches without looking. Her mouth stays closed. Nobody speaks.",
+    "c": "Golden hour on the porch. The same woman sits on the step with a mug, glasses on, watching kids ride past on the pavement, entirely unhurried. Mouth closed, nobody speaks."
+   },
+   "narration": "Some days the list unrolls right out the front door. Meta AI is a personal agent that works on your behalf, on your phone and in your glasses. It takes the list, so the day is actually yours.",
+   "closer": "Meta AI, an exceptionally capable personal agent. Put it to work today. The pipeline behind this spot is public, link under the video.",
+   "bed": "Airy uplifting instrumental, warm synth and soft handclaps, spacious modern lifestyle feeling, no vocals"
+  },
+  "pics": {
+   "brand": "Google Pics",
+   "card": "Your exact vision.",
+   "look": "<id>",
+   "positioning": "AI image creation and editing that brings your exact vision to life, down to a single object (verified: blog.google I/O 2026)",
+   "quirk": "the removed sofa reappears tiny in the far background, wandering off down the street",
+   "scenes": {
+    "a": "A man holds a printed photograph at arm's length in a living room, and the furniture INSIDE the photograph is visibly moving on its own: a sofa slides out of the picture's edge, a lamp walks in, a rug rotates. The real room behind him is perfectly still. His mouth is closed. Nobody speaks.",
+    "b": "Close on the photograph in his hands as one object settles into exactly the right place and everything else stops moving. Far away in the background of the picture, a tiny sofa is wandering off down a street. His mouth stays closed. Nobody speaks.",
+    "c": "He pins the finished photograph to a wall of other prints and steps back, hands in pockets, looking at it with quiet satisfaction. Mouth closed, nobody speaks."
+   },
+   "narration": "The photo is almost right, and almost is the thing that ruins it. Google Pics makes and edits images from a plain description, down to a single object. Move it, replace it, and it is still your picture.",
+   "closer": "Google Pics, bring your exact vision to life. Try it on your next photo. The pipeline behind this spot is public, link under the video.",
+   "bed": "Playful curious instrumental, marimba and light strings, inventive creative-studio feeling, no vocals"
+  }
+ },
+ "guard": "Natural skin texture with visible pores and slight imperfections, documentary realism, no beauty smoothing, imperfect practical lighting, real micro-expressions, natural motion timing with small human hesitations. No readable on-screen text anywhere in frame, no logos, no brand marks. Keep hands either fully out of frame or large, simple and clearly articulated. NO narration, NO voiceover, NO captions, NO avatar or presenter, no music, natural ambient sound only. One single continuous live-action scene, about 5 seconds, subject centered, raw b-roll for an edit. Composed for a centered square crop: every story object stays inside the middle third of the frame and never approaches the left or right edge.",
+ "engine": "google/gemini-omni-flash"
+}

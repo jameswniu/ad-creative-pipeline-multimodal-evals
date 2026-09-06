@@ -1,0 +1,1 @@
+2026-08-29 lipsync_probe FAIL on both v1 closers adjudicated FALSE-NEGATIVE by frame-vs-silence spot check (silencedetect onsets vs extracted frames: mouth closed at all silence instants, open at speech instants, both spots). zai probe median +9.9s lag = detector blindness on 3/4-angle look. jaw grok 0.1136 zai 0.1167. Shipping gate remains ad_gates.sh closer window on master.

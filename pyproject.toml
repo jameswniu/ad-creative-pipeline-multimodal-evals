@@ -1,0 +1,61 @@
+# Not a package. Nothing here is importable as a library and there is no build
+# backend, because every file in this repository is an independently invoked
+# leaf and pretending otherwise would be a fiction for the benefit of tooling.
+#
+# What this file is for is the one real gap requirements.txt left: it declares
+# the PROBE dependencies only, so the pipeline half of the repo had no documented
+# install path at all. torch and transformers are heavy, unnecessary for the
+# measurement layer, and were deliberately left out. That was the right call and
+# the wrong outcome, because it read as an omission rather than a choice. They
+# are an optional group now, so the choice is visible and installable.
+#
+#   pip install -r requirements.txt          the probes and the guards
+#   pip install '.[pipeline]'                adds the local models
+#   pip install '.[dev]'                     adds pytest and ruff
+#
+# ffmpeg and ffprobe are required by both halves and cannot be expressed here.
+# They are system binaries; install them with your package manager.
+
+[project]
+name = "ad-creative-pipeline-multimodal-evals"
+version = "0.1.0"
+description = "Three-tier eval harness (process, outcome, vibe) for agentic AI-generated video ads"
+requires-python = ">=3.10"
+
+# Versions are the ones this was actually run against, not the minimum that might
+# work. Nothing is pinned exactly, because the APIs used here (VideoCapture,
+# absdiff, matchTemplate, ndarray math) have been stable for years and an exact
+# pin would age worse than the code does.
+dependencies = [
+    "numpy>=1.24",
+    "opencv-python>=4.8",
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+pipeline = [
+    "torch>=2.0",
+    "transformers>=4.40",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# The repo already carries `# noqa` markers, which means a linter was being run
+# somewhere without its configuration living alongside the code. This is that
+# configuration, so the markers now refer to rules a reader can look up.
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "E501",  # line length is checked by the formatter, not twice
+    "B008",  # argparse defaults are constructed in the signature on purpose
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The vendored matting model is third party and is not ours to restyle.
+"models/**" = ["ALL"]

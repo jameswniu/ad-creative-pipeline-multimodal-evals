@@ -1,0 +1,36 @@
+[
+ {
+  "ts": "2026-08-26",
+  "scene": "orchard-a",
+  "engine": "bytedance/seedance-2.0/text-to-video",
+  "roll": 2,
+  "id": "<request-id>",
+  "response_url": "https://queue.fal.run/bytedance/seedance-2.0/requests/<request-id>",
+  "prompt": "Early morning light on a quiet suburban front yard. A middle-aged man in a plaid bathrobe opens a standard black curbside mailbox and a soft cloud of warm, fragrant coffee-roast steam drifts out of it. He closes his eyes and leans his face into the drifting steam, smiling wide, and the steam curls gently toward him instead of blowing away.\n\nNatural skin texture with visible pores and slight imperfections, documentary realism, no beauty smoothing, imperfect practical lighting, real micro-expressions, natural motion timing with small human hesitations. No readable on-screen text anywhere in frame, no logos, no brand marks. Keep hands either fully out of frame or large, simple and clearly articulated. NO narration, NO voiceover, NO captions, NO avatar or presenter, no music, natural ambient sound only. One single continuous live-action scene, about 5 seconds, subject centered, raw b-roll for an edit."
+ },
+ {
+  "ts": "2026-08-26",
+  "scene": "slowroad-a",
+  "engine": "bytedance/seedance-2.0/text-to-video",
+  "roll": 2,
+  "id": "<request-id>",
+  "response_url": "https://queue.fal.run/bytedance/seedance-2.0/requests/<request-id>",
+  "prompt": "A woman stands on the rear open-air platform of a slow vintage train as it eases out of a small rural station, both hands on the railing, wind in her hair, a paper luggage tag on the suitcase beside her fluttering hard like a small bird, and she laughs over her shoulder toward the receding platform.\n\nNatural skin texture with visible pores and slight imperfections, documentary realism, no beauty smoothing, imperfect practical lighting, real micro-expressions, natural motion timing with small human hesitations. No readable on-screen text anywhere in frame, no logos, no brand marks. Keep hands either fully out of frame or large, simple and clearly articulated. NO narration, NO voiceover, NO captions, NO avatar or presenter, no music, natural ambient sound only. One single continuous live-action scene, about 5 seconds, subject centered, raw b-roll for an edit."
+ },
+ {
+  "ts": "2026-08-26",
+  "scene": "orchard-bed",
+  "engine": "fal-ai/lyria2",
+  "roll": 3,
+  "id": "<request-id>",
+  "response_url": "https://queue.fal.run/fal-ai/lyria2/requests/<request-id>"
+ },
+ {
+  "ts": "2026-08-26",
+  "scene": "harbor-bed",
+  "engine": "fal-ai/lyria2",
+  "roll": 3,
+  "id": "<request-id>",
+  "response_url": "https://queue.fal.run/fal-ai/lyria2/requests/<request-id>"
+ }
+]

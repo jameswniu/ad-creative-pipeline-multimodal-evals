@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# .githooks/commit-msg - scan the message that is ABOUT to be committed.
+#
+# WHY THIS EXISTS, AND WHAT IT COST TO LEARN
+#   The pre-commit hook scans two things: the staged files, and the messages
+#   already in history. It never sees the message being written, because at
+#   pre-commit time that message does not exist yet.
+#
+#   So a string this repo classifies as a BLOCKER went into a message, passed
+#   the gate, and was published. The scanner then began failing on EVERY
+#   subsequent commit, because the text had become history and the history rule
+#   could finally see it. The gate was not silent. It was one commit late,
+#   which for an irreversible publication is the same as silent.
+#
+#   The category is deliberately not named here. A comment explaining a leak
+#   that points at which KIND of thing leaked is a smaller leak in the same
+#   direction, and the reviewing layer flagged exactly that on the first draft.
+#
+#   git offers exactly the right hook for this and the repo was not using it.
+#   commit-msg receives the path to the pending message as $1, runs after the
+#   message is written and before the commit object exists, and a nonzero exit
+#   aborts the commit with the message preserved for editing.
+#
+# WHAT IT CHECKS
+#   The same tools/pii_context.txt rule table the deterministic scanner uses,
+#   filtered to BLOCKER rows. One table, so a rule added there is enforced on
+#   file content and on message text without being written twice.
+#
+# CASE SENSITIVITY
+#   Matching is case-insensitive here for every BLOCKER rule, because a commit
+#   message is prose and a name in prose is written however the writer felt at
+#   the time. tools/pii_scan.sh used to have no way to say that per rule, so an
+#   all-caps spelling walked straight through it. It now takes an optional
+#   flags column and the project rules carry -i, so the two scanners agree on
+#   names while the file scanner keeps its identifier rules exact-case, which
+#   they have to be.
+#
+#   Rules are referred to by their LABEL here, never by reproducing the
+#   pattern. Writing the pattern into a comment writes the very string the
+#   pattern exists to catch, which is not a hypothetical: the first draft of
+#   this file did exactly that and the gate refused it.
+#
+# INSTALL (same one line as the other hook, run once per clone)
+#   git config core.hooksPath .githooks && chmod +x .githooks/commit-msg
+#
+# BYPASS
+#   Git's standard skip-verification flag bypasses this, as it does every hook.
+#   That is deliberate and is the reason the pre-commit gate also runs, and the
+#   reason CI re-runs the scan on what actually landed.
+set -uo pipefail
+
+MSG_FILE="${1:?commit-msg hook called without a message file}"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+RULES="$ROOT/tools/pii_context.txt"
+
+[ -f "$RULES" ] || exit 0          # no table, nothing to enforce
+[ -f "$MSG_FILE" ] || exit 0
+
+# Comments are stripped: git discards them, so flagging one would block a commit
+# over text that is never stored.
+BODY="$(grep -v '^#' "$MSG_FILE" 2>/dev/null || true)"
+[ -n "${BODY//[[:space:]]/}" ] || exit 0
+
+FOUND=0
+# FIVE fields, not four. The table grew an optional flags column, and a
+# four-field read silently appended it to the regex, so every pattern became
+# unmatchable and this hook passed everything while looking like it ran. It
+# was not caught by a test because nothing tested this hook.
+while IFS=$'\t' read -r sev class label re flags; do
+  case "$sev" in ''|'#'*) continue ;; esac
+  # HIGH as well as BLOCKER. pii_scan.sh already refuses to publish on either,
+  # so enforcing only BLOCKER here left the two layers disagreeing about what
+  # is publishable, and a HIGH word reached a public commit message through it.
+  case "$sev" in BLOCKER|HIGH) ;; *) continue ;; esac
+  [ -n "${re:-}" ] || continue
+  # Honour the rule's own flags rather than forcing -i. A rule deliberately
+  # marked exact-case is usually a brand name that collides with an ordinary
+  # English word, and a commit message in this repo will use that word.
+  HITS="$(printf '%s\n' "$BODY" | grep -n $flags -E -e "$re" 2>/dev/null || true)"
+  if [ -n "$HITS" ]; then
+    if [ "$FOUND" -eq 0 ]; then
+      echo "" >&2
+      echo "############################################################" >&2
+      echo "# COMMIT MESSAGE BLOCKED" >&2
+      echo "#" >&2
+      echo "# The message you just wrote contains something this repo" >&2
+      echo "# refuses to publish. Publication is irreversible, so this" >&2
+      echo "# is a hard stop rather than a warning." >&2
+      echo "############################################################" >&2
+      echo "" >&2
+      FOUND=1
+    fi
+    echo "  $class:$sev:$label" >&2
+    # The matched text is NOT echoed. A gate that prints the secret into your
+    # terminal has moved it, not caught it. The line number is enough to find.
+    printf '%s\n' "$HITS" | cut -d: -f1 | while read -r n; do
+      echo "      message line $n" >&2
+    done
+  fi
+done < "$RULES"
+
+if [ "$FOUND" -ne 0 ]; then
+  echo "" >&2
+  echo "  Your message is preserved. Edit it and commit again:" >&2
+  echo "    git commit -e -F \"$MSG_FILE\"" >&2
+  echo "" >&2
+  exit 1
+fi
+exit 0

@@ -1,0 +1,166 @@
+{
+ "orchard": {
+  "engine_a": "Seedance 2.0",
+  "rows": [
+   [
+    "Gesture energy, higher",
+    0.595,
+    0.716,
+    "B"
+   ],
+   [
+    "Background clutter, lower",
+    8.7,
+    3.06,
+    "B"
+   ],
+   [
+    "Eye rejection, lower",
+    5.28,
+    6.07,
+    "A"
+   ],
+   [
+    "Scene simplicity, lower",
+    7.27,
+    6.95,
+    "B"
+   ],
+   [
+    "Face level wander, lower",
+    189.0,
+    202.4,
+    "A"
+   ]
+  ],
+  "wins": {
+   "A": 2,
+   "B": 3
+  },
+  "winner": "B",
+  "how": "2 rows to 3"
+ },
+ "lantern": {
+  "engine_a": "Wan 3.0",
+  "rows": [
+   [
+    "Eye rejection, lower",
+    4.0,
+    5.45,
+    "A"
+   ],
+   [
+    "Background clutter, lower",
+    4.88,
+    3.25,
+    "B"
+   ],
+   [
+    "Scene simplicity, lower",
+    5.2,
+    5.99,
+    "A"
+   ],
+   [
+    "Gesture energy, lower is calmer",
+    0.51,
+    0.675,
+    "A"
+   ],
+   [
+    "Face level wander, lower",
+    97.4,
+    144.8,
+    "A"
+   ]
+  ],
+  "wins": {
+   "A": 4,
+   "B": 1
+  },
+  "winner": "A",
+  "how": "4 rows to 1"
+ },
+ "harbor": {
+  "engine_a": "Wan 3.0",
+  "rows": [
+   [
+    "Gesture energy, higher",
+    0.894,
+    0.691,
+    "A"
+   ],
+   [
+    "Background richness, higher",
+    11.52,
+    6.55,
+    "A"
+   ],
+   [
+    "Eye rejection, lower",
+    6.42,
+    5.94,
+    "B"
+   ],
+   [
+    "Face level wander, lower",
+    191.2,
+    149.5,
+    "B"
+   ],
+   [
+    "Scene simplicity, lower",
+    8.75,
+    7.24,
+    "B"
+   ]
+  ],
+  "wins": {
+   "A": 2,
+   "B": 3
+  },
+  "winner": "B",
+  "how": "2 rows to 3"
+ },
+ "slowroad": {
+  "engine_a": "Seedance 2.0",
+  "rows": [
+   [
+    "Gesture energy, higher",
+    0.76,
+    0.48,
+    "A"
+   ],
+   [
+    "Background busy-ness, higher",
+    3.87,
+    6.93,
+    "B"
+   ],
+   [
+    "Eye rejection, lower",
+    4.27,
+    7.37,
+    "A"
+   ],
+   [
+    "Scene simplicity, lower",
+    6.75,
+    7.64,
+    "A"
+   ],
+   [
+    "Face level wander, lower",
+    112.0,
+    145.5,
+    "A"
+   ]
+  ],
+  "wins": {
+   "A": 4,
+   "B": 1
+  },
+  "winner": "A",
+  "how": "4 rows to 1"
+ }
+}

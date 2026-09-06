@@ -1,0 +1,52 @@
+{
+ "guard": " Documentary realism, natural skin texture, imperfect practical lighting, real micro-expressions, natural motion timing, no beauty smoothing, no captions, no watermarks, no narration, natural ambient sound only, one single continuous live-action scene, about 5 seconds, landscape 16:9.",
+ "scenes": {
+  "orchard-a": "A man in a sunlit kitchen screams in despair at a bag of stale supermarket coffee, flinging it onto the counter beside a drip machine, morning light through the window.",
+  "orchard-b": "A suburban mailbox smoking like a chimney; a woman opens it and pulls out a gently steaming fresh coffee package, delighted, while a man jogs up the lawn behind her.",
+  "orchard-c": "An old farmer on a green coffee hillside hands a small paper bag of beans to a hovering delivery drone, which lifts away over the rows.",
+  "lantern-a": "A man at three in the morning lit only by his laptop, hands pressed to his temples in despair at dozens of open windows, his family asleep in the background.",
+  "lantern-b": "A man in rumpled pajamas sprints down a dark server-room corridor clutching an open laptop, panic on his face.",
+  "lantern-c2": "A man in bed at night relaxing as his phone glows; a large green terminal banner reading SYSTEM STABLE floats on the screen he holds up.",
+  "harbor-a": "A young couple recoils in a bright living room absurdly filled with hundreds of garden gnomes covering every surface.",
+  "harbor-b": "A blonde realtor in a navy blazer stands by a crooked hand-painted For Sale sign on a suburban street, checking her phone, unimpressed.",
+  "harbor-c": "A realtor in a cream blazer waves from a porch while a neighbor family on the lawn waves back, golden late light.",
+  "quiet-a": "A man in bed at two in the morning stares at his phone showing a harsh red sleep score of 32, the glow lighting his tired face.",
+  "quiet-b": "A woman in a pink-lit bedroom at night furiously works equations on a chalkboard in her pajamas, determined to fix her sleep score.",
+  "quiet-c": "A large black panther deeply asleep on a neatly made bed, yawning once and settling back into the pillows.",
+  "slowroad-a": "A couple sprints through a European cathedral square dragging rolling suitcases, scattering pigeons, breathless.",
+  "slowroad-b": "A crammed tour group inside a train car all photograph a single cow through the window as fields blur past.",
+  "slowroad-c": "Three friends and a grandmother pour wine at a long wooden table in a vineyard at sunset, relaxed and laughing."
+ },
+ "text_beats": [
+  "harbor-b",
+  "lantern-c2",
+  "quiet-a"
+ ],
+ "ads": {
+  "orchard": [
+   "orchard-a",
+   "orchard-b",
+   "orchard-c"
+  ],
+  "lantern": [
+   "lantern-a",
+   "lantern-b",
+   "lantern-c2"
+  ],
+  "harbor": [
+   "harbor-a",
+   "harbor-b",
+   "harbor-c"
+  ],
+  "quiet": [
+   "quiet-a",
+   "quiet-b",
+   "quiet-c"
+  ],
+  "slowroad": [
+   "slowroad-a",
+   "slowroad-b",
+   "slowroad-c"
+  ]
+ }
+}

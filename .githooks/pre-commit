@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit - the pre-publish PII gate, wired so neither half can be
+# forgotten. Both layers run on every commit. Either one failing stops the commit.
+#
+# INSTALL (one line, run once per clone):
+#   git config core.hooksPath .githooks && chmod +x .githooks/pre-commit
+#
+# WHY core.hooksPath RATHER THAN .git/hooks
+#   .git/hooks is not versioned and does not survive a fresh clone, so a hook
+#   copied there protects exactly one working copy and silently protects nothing
+#   anywhere else. core.hooksPath points git at a directory that IS in the repo,
+#   so the hook travels with the code and a reviewer can see it in the diff. It
+#   still needs the one line above per clone, because git will not let a
+#   repository configure its own hook path automatically. That is a feature.
+#
+# WHAT RUNS
+#   1. tools/pii_scan.sh --staged        deterministic patterns, all seven classes
+#   2. tools/pii_llm_review.sh --staged  judgement layer, for what regex cannot see
+#
+#   Layer 1 fails on any BLOCKER or HIGH finding.
+#   Layer 2 fails when the model flags anything, AND when the model cannot be
+#   reached. Unreviewed is not clean. See the header of that script.
+#
+# BYPASS
+#   Git's standard skip-verification flag on the commit command bypasses this
+#   hook entirely. That is a deliberate human act. It is not available to any
+#   automation in this repository, and it should never appear in a script here.
+#   If a finding is wrong, suppress it visibly instead: an inline pii-allow
+#   marker on the line, or an entry in tools/pii_allowlist.txt. A suppression
+#   shows up in the diff. A skipped hook does not.
+#
+# SPEED
+#   Layer 2 makes a network call per chunk of staged content. On a commit that
+#   touches one or two files that is a single call. Set PII_GATE_SKIP_LLM=1 to
+#   run layer 1 only during a rapid local edit loop, but never for the commit
+#   that is actually going to be pushed to the public remote. The hook prints a
+#   loud warning when that variable is set, so it cannot be forgotten quietly.
+
+set -uo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  echo "pre-commit: not inside a git work tree" >&2
+  exit 1
+}
+cd "$REPO_ROOT" || exit 1
+
+SCAN="$REPO_ROOT/tools/pii_scan.sh"
+LLM="$REPO_ROOT/tools/pii_llm_review.sh"
+
+# A missing gate script is a failure, not a skip. If someone deletes or renames
+# one of these, the commit stops rather than sailing through unguarded.
+for f in "$SCAN" "$LLM"; do
+  if [ ! -r "$f" ]; then
+    echo "pre-commit: FAIL. Required gate script is missing: $f"
+    echo "The PII gate cannot run. Restore it before committing."
+    exit 1
+  fi
+done
+
+# Nothing staged means nothing to review.
+if git diff --cached --quiet 2>/dev/null; then
+  echo "pre-commit: no staged changes, PII gate skipped."
+  exit 0
+fi
+
+STAGED_COUNT=$(git diff --cached --name-only --diff-filter=ACMR | wc -l | tr -d ' ')
+
+echo "############################################################"
+echo "# pre-publish PII gate"
+echo "# staged files: $STAGED_COUNT"
+echo "############################################################"
+echo
+
+FAILED=0
+
+echo "[1/2] deterministic pattern scan"
+echo "------------------------------------------------------------"
+bash "$SCAN" --staged
+scan_rc=$?
+echo
+if [ "$scan_rc" -ne 0 ]; then
+  FAILED=1
+  echo "[1/2] FAILED (exit $scan_rc)"
+else
+  echo "[1/2] passed"
+fi
+echo
+
+if [ "${PII_GATE_SKIP_LLM:-0}" = "1" ]; then
+  echo "[2/2] SKIPPED because PII_GATE_SKIP_LLM=1"
+  echo "      Third-party names, routine, location, and confidential context were"
+  echo "      NOT reviewed on this commit. Do not push this commit to a public"
+  echo "      remote without running: bash tools/pii_llm_review.sh"
+  echo
+else
+  echo "[2/2] LLM review of staged content"
+  echo "------------------------------------------------------------"
+  bash "$LLM" --staged
+  llm_rc=$?
+  echo
+  case "$llm_rc" in
+    0) echo "[2/2] passed" ;;
+    1) FAILED=1; echo "[2/2] FAILED: the reviewer flagged content" ;;
+    *) FAILED=1; echo "[2/2] FAILED CLOSED: the reviewer could not be reached (exit $llm_rc)" ;;
+  esac
+  echo
+fi
+
+echo "############################################################"
+if [ "$FAILED" -ne 0 ]; then
+  echo "# COMMIT BLOCKED"
+  echo "#"
+  echo "# This repository is going to be public. Publication is irreversible,"
+  echo "# so the gate is a hard stop rather than a warning."
+  echo "#"
+  echo "# Fix the findings above, or suppress them visibly:"
+  echo "#   inline marker:  add pii-allow to the offending line"
+  echo "#   allowlist:      add <path-substring>|<label> to tools/pii_allowlist.txt"
+  echo "############################################################"
+  exit 1
+fi
+
+echo "# PII gate passed. Commit proceeding."
+echo "############################################################"
+exit 0

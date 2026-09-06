@@ -1,0 +1,112 @@
+name: pii-gate
+
+# Publication is irreversible, so this runs on every push and every pull
+# request, and a failure blocks the merge.
+#
+# WHAT THIS CATCHES, AND WHAT IT DOES NOT
+#   This job runs the DETERMINISTIC layer only. The judgement layer
+#   (tools/pii_llm_review.sh) needs a model, and a fork's pull request cannot
+#   read repository secrets, so wiring it here would give a false sense of
+#   coverage on exactly the contributions least likely to be trusted. The
+#   judgement layer runs locally in .githooks/pre-commit instead, where the
+#   author has the credential.
+#
+#   Say this plainly rather than hiding it: CI is the weaker of the two gates.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The scan reads the working tree, not history, but a shallow clone
+          # is enough and keeps the job fast.
+          fetch-depth: 1
+
+      # The project-specific word list and the third-party name list are
+      # gitignored on purpose: a scanner that hardcodes an employer name or a
+      # colleague's name leaks exactly what it exists to prevent. So CI
+      # materializes them from secrets when they exist. When they do not, the
+      # affected checks are SKIPPED, the scan says so, and the step below
+      # turns that into a visible warning rather than a silent pass.
+      # Class 7 (media metadata) needs a real metadata reader. Without one the
+      # scanner fails CLOSED on every media file, which is correct behaviour
+      # and a red CI, so the reader is installed rather than the check skipped.
+      # The repo now tracks curated, metadata-stripped exhibits in assets/,
+      # and this step is what lets CI verify the stripping actually held.
+      - name: Install media metadata reader
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libimage-exiftool-perl
+
+      - name: Materialize local-only context
+        env:
+          PII_CONTEXT: ${{ secrets.PII_CONTEXT }}
+          PII_NAMES: ${{ secrets.PII_NAMES }}
+        run: |
+          if [ -n "${PII_CONTEXT:-}" ]; then
+            printf '%s\n' "$PII_CONTEXT" > tools/pii_context.txt
+            echo "context: provided"
+          else
+            echo "context: ABSENT, class 5 and 6 project words will be SKIPPED"
+          fi
+          if [ -n "${PII_NAMES:-}" ]; then
+            printf '%s\n' "$PII_NAMES" > tools/pii_names.txt
+            echo "names: provided"
+          else
+            echo "names: ABSENT, class 4 third-party names will be SKIPPED"
+          fi
+
+      # The status is captured explicitly rather than taken from a pipeline.
+      # Two bugs have lived in this one step, in opposite directions, and both
+      # are kept on record here:
+      #   1. FAIL-OPEN: piping the scan into tee made the step exit with tee's
+      #      status, always 0, so a failing scan reported a passing job.
+      #   2. FAIL-SILENT: the rewrite that fixed (1) forgot that Actions runs
+      #      `bash -e`, so the scan's nonzero exit killed the step BEFORE the
+      #      `cat`, and the very first CI failure on this repository shipped
+      #      no diagnostics at all: a gate that says no without saying why.
+      # `set +e` makes the capture-then-report sequence actually reach the
+      # report. The exit status is still the scan's own.
+      - name: Deterministic PII scan
+        run: |
+          # Output goes OUTSIDE the work tree. Redirecting into the repo
+          # created an empty scan.out before the scan built its file list;
+          # the empty file classified as unreadable media and failed the
+          # run as its own finding. A scanner must not scan its own output.
+          set +e
+          bash tools/pii_scan.sh > "$RUNNER_TEMP/scan.out" 2>&1
+          rc=$?
+          cat "$RUNNER_TEMP/scan.out"
+          exit "$rc"
+
+      # A skipped check is not a passing check. The scan already prints this;
+      # this step promotes it into the job summary so it is visible on the PR
+      # rather than buried in log output nobody expands.
+      - name: Report skipped checks
+        if: always()
+        run: |
+          {
+            echo "### PII gate"
+            echo ""
+            grep -E '^totals:' "$RUNNER_TEMP/scan.out" || true
+            echo ""
+            if grep -q 'CHECKS SKIPPED' "$RUNNER_TEMP/scan.out"; then
+              echo "**Skipped checks (not passing checks):**"
+              echo ""
+              sed -n '/CHECKS SKIPPED/,/^$/p' "$RUNNER_TEMP/scan.out" | sed 's/^/    /'
+              echo ""
+              echo "Set the PII_CONTEXT and PII_NAMES repository secrets to arm these."
+            else
+              echo "All checks armed."
+            fi
+            echo ""
+            echo "_The judgement layer does not run in CI. See this file's header._"
+          } >> "$GITHUB_STEP_SUMMARY"

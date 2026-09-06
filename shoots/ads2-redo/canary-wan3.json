@@ -1,0 +1,10 @@
+{
+ "status": "IN_QUEUE",
+ "request_id": "<request-id>",
+ "response_url": "https://queue.fal.run/alibaba/wan-3.0/requests/<request-id>",
+ "status_url": "https://queue.fal.run/alibaba/wan-3.0/requests/<request-id>/status",
+ "cancel_url": "https://queue.fal.run/alibaba/wan-3.0/requests/<request-id>/cancel",
+ "logs": null,
+ "metrics": {},
+ "queue_position": 0
+}

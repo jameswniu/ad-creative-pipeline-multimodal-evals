@@ -1,0 +1,47 @@
+*.mp4
+*.mov
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.quilt
+# synthesized audio and the subtitle track, which carries the full script text
+*.mp3
+*.wav
+*.m4a
+*.srt
+*.vtt
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+models/
+renders/
+state/
+*.env
+.env
+*.log
+.DS_Store
+# never commit real ids
+pins.json
+
+# pre-publish PII gate: local-only inputs, never committed
+# project-specific words (employer, product, repo, place names)
+tools/pii_context.txt
+# third-party person names used for the class 4 check
+tools/pii_names.txt
+
+# assets/ carries the README's visual evidence: metadata-stripped stills, one
+# GIF, and the hero SVG. The blanket media excludes above exist to keep RENDER
+# OUTPUT out of git; these are curated, stripped, reviewed exhibits, which is
+# a different thing. gitignore is last-match-wins, so these negations re-admit
+# exactly this directory and nothing else.
+!assets/
+!assets/**
+# samples/ is the synthetic colour+depth pair the pipeline defaults to. It has
+# to escape the blanket *.mp4 above the same way assets/ does, or `git add -A`
+# skips it in silence and the pipeline is unrunnable on every clone. That is
+# exactly what happened once; CI caught it because the runner had no local copy.
+!samples/
+!samples/**
+.pytest_cache/

@@ -1,0 +1,75 @@
+# Labelled exemplars behind the named gating thresholds in probes/.
+#
+# PROVENANCE. Two kinds of row, and the difference is the point:
+#   pixels=<path>     the frame ships here. derive.py re-measures it with the
+#                     probe's OWN function and fails if the number does not come
+#                     back. A stranger can check it.
+#   pixels=withheld   the source render is not retained. `measured` is the number
+#                     recorded in the probe's docstring at derivation time.
+#                     Attested, not reproducible. Counted separately, never quietly.
+#
+# VERDICT is the human call, made before any metric existed. pass and reject are
+# the only two that form a bracket. Two other values exist and are reported by
+# derive.py rather than dropped:
+#   marginal        the human called it neither good nor bad
+#   out-of-domain   the probe's question does not apply to this frame
+#
+# AXIS, not unit. Two constants in one module can share a unit and measure
+# unrelated things, so brackets match on axis and never on unit alone.
+#
+# KNOWN TENSION, recorded rather than resolved: scene_simplicity's b5c is marked
+# marginal on the strength of its human verdict, "kinda ok". Its own docstring
+# instead places the boundary between b5c (7.51) and T6 (9.50) while setting the
+# target to <= 7.5, which are not the same statement. Relabel b5c as pass and
+# III_MAX = 7.5 is REFUTED by a hundredth. That call belongs to the author, not
+# to whoever wrote this file, so it is flagged here instead of being decided here.
+#
+probe,item,verdict,measured,axis,pixels,note
+bg_detail,take1-final-pro,pass,4.27,bg_gradient,withheld,plain wall + sofa + one picture frame
+bg_detail,take3-final-pro,pass,3.61,bg_gradient,withheld,plain bedroom wall + warm lamp
+bg_detail,R2-sunrise-beach,reject,7.05,bg_gradient,withheld,
+bg_detail,R1-flower-stall,reject,11.64,bg_gradient,withheld,a wall of hundreds of roses and tulips
+bg_detail,R3-golden-florist,reject,12.06,bg_gradient,withheld,
+bg_detail,assets/look-still.jpg,pass,1.98,bg_gradient,assets/look-still.jpg,shipped stage-3 look; side bands are real background
+bg_detail,assets/render-frame.jpg,out-of-domain,1.36,bg_gradient,assets/render-frame.jpg,side bands are 87% flat pillarbox; measures padding not backdrop
+bg_detail,assets/hologram-full.mp4,out-of-domain,2.40,bg_gradient,assets/hologram-full.mp4,side bands are 82% flat pillarbox
+bg_detail,assets/stage-nobg.jpg,out-of-domain,5.43,bg_gradient,assets/stage-nobg.jpg,background already removed; the question does not apply
+scene_simplicity,r3,pass,2.68,scene_gradient,withheld,"human verdict ""perfect"""
+scene_simplicity,b5c,marginal,7.51,scene_gradient,withheld,"human verdict ""kinda ok""; see KNOWN TENSION above"
+scene_simplicity,T6,reject,9.50,scene_gradient,withheld,"human verdict ""worst"""
+scene_simplicity,T3,reject,13.40,scene_gradient,withheld,
+scene_simplicity,T2,reject,14.90,scene_gradient,withheld,
+scene_simplicity,T4,reject,17.00,scene_gradient,withheld,
+eye_eval,worst-labelled-pass,pass,3.30,eye_gradient,withheld,role name not a clip id; restates the docstring conclusion
+eye_eval,best-labelled-reject,reject,5.32,eye_gradient,withheld,role name not a clip id
+eye_eval,second-reject,reject,11.09,eye_gradient,withheld,
+eye_eval,third-reject,reject,11.78,eye_gradient,withheld,
+sync_probe,take3-final-pro,pass,-160,mouth_lag_ms,withheld,mouth leads; ship_gate.sh states this bound as -240
+sync_probe,M1,pass,-80,mouth_lag_ms,withheld,
+sync_probe,F1,pass,-40,mouth_lag_ms,withheld,
+sync_probe,G1,pass,40,mouth_lag_ms,withheld,"human verdict ""fine""; worst pass"
+sync_probe,G4b,reject,120,mouth_lag_ms,withheld,"human verdict ""the lip sync is a bit off"""
+sync_probe,G5b,reject,240,mouth_lag_ms,withheld,"human verdict ""the lip sync is a bit off"""
+level_probe,scene-pass-low,pass,3.70,scene_level,withheld,SCENE_MAX re-derived 2026-07-26
+level_probe,scene-pass-high,pass,3.80,scene_level,withheld,in the golden set
+level_probe,scene-reject,reject,7.70,scene_level,withheld,best of the rejects
+mirror_probe,iv-benchmark,pass,0.74,repeat_distance,withheld,share of the unrelated-frame distance
+mirror_probe,refill-reject-a,reject,0.00,repeat_distance,withheld,scene refills
+mirror_probe,refill-reject-b,reject,0.15,repeat_distance,withheld,best of the rejects
+mirror_probe,iv-benchmark-lo,pass,0.31,replay_distance,withheld,iv benchmark band 0.31 to 0.41
+mirror_probe,iii-reject-hi,reject,0.14,replay_distance,withheld,iii rejects band 0.02 to 0.14
+level_probe,iv-standard-face,pass,4.20,face_level,withheld,the standard I set; docstring also states 7.9 for this clip
+level_probe,iv-standard-face-alt,pass,7.90,face_level,withheld,the conflicting figure for the SAME clip; kept as the worst pass so the bracket is the tight one
+level_probe,iii-night-face,reject,22.00,face_level,withheld,avatar_iii raw on a hard-rim night look
+level_probe,iv-standard-relation,pass,10.30,relation_level,withheld,the standard I set
+level_probe,iii-night-relation,reject,24.00,relation_level,withheld,avatar_iii raw on a hard-rim night look
+scene_simplicity,assets/look-still.jpg,pass,3.03,scene_gradient,assets/look-still.jpg,shipped as the stage-3 look on the landing page; accepted output
+coherence_probe,r16-human-anchor,pass,0.116,rest_fraction,withheld,eye verified band 0.10 to 0.17
+coherence_probe,human-bakery,pass,0.106,rest_fraction,withheld,the tune-down round measurably raised it
+coherence_probe,smooth-bakery,reject,0.065,rest_fraction,withheld,best of the rejects
+coherence_probe,smooth-beach,reject,0.007,rest_fraction,withheld,called robotic
+coherence_probe,regen-beach,reject,0.000,rest_fraction,withheld,called robotic
+coherence_probe,calm-wave,out-of-domain,0.130,rest_fraction,withheld,KNOWN CONFOUND in the probe's own docstring: rejected on another axis while passing rest at 0.11 to 0.15
+mirror_probe,frozen-control,reject,0.20,replay_signal,samples/frozen-control.mp4,one frame held for 40s; no signal by construction
+mirror_probe,live-take,pass,545.50,replay_signal,assets/hologram-full.mp4,a real take with a moving scene
+mirror_probe,static-band-incident,reject,0.60,replay_signal,withheld,recorded in the probe's docstring: a control of 0.6 exonerated a clip that ping-ponged at t=80

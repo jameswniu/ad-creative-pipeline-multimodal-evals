@@ -1,0 +1,5 @@
+grok <id> look=<id> audio=<id>
+zai <id> look=<id> audio=<id>
+moonshot audio=<id> (look tbd by gates)
+claude audio=<id> (look tbd)
+claudecode audio=<id> (look tbd)

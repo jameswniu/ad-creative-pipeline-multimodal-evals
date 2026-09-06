@@ -1,0 +1,9 @@
+# Probe dependencies. The guards are bash and need only jq.
+#
+# Versions below are the ones the probes were actually run against, not the
+# minimum that might work. Nothing here is pinned exactly, because the probes
+# use long-stable APIs (VideoCapture, absdiff, matchTemplate, ndarray math) and
+# an exact pin would age worse than the code does.
+opencv-python>=4.8
+numpy>=1.24
+Pillow>=10.0

@@ -1,0 +1,28 @@
+{"ts": "2026-08-26", "kind": "scene", "scene": "harbor-a", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "harbor-b", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "harbor-c", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "lantern-a", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "lantern-b", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "lantern-c", "dur_s": 5.04, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "orchard-a", "dur_s": 5.06, "roll": 2}
+{"ts": "2026-08-26", "kind": "scene", "scene": "orchard-b", "dur_s": 5.06, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "orchard-c", "dur_s": 5.06, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "slowroad-a", "dur_s": 5.06, "roll": 2}
+{"ts": "2026-08-26", "kind": "scene", "scene": "slowroad-b", "dur_s": 5.06, "roll": 1}
+{"ts": "2026-08-26", "kind": "scene", "scene": "slowroad-c", "dur_s": 5.06, "roll": 1}
+{"ts": "2026-08-26", "kind": "closer", "scene": "orchard-av", "heygen_video_id": "<id>", "resolution": "1080p"}
+{"ts": "2026-08-26", "kind": "closer", "scene": "lantern-av", "heygen_video_id": "<id>", "resolution": "1080p"}
+{"ts": "2026-08-26", "kind": "closer", "scene": "harbor-av", "heygen_video_id": "<id>", "resolution": "1080p"}
+{"ts": "2026-08-26", "kind": "closer", "scene": "slowroad-av", "heygen_video_id": "<id>", "resolution": "1080p"}
+{"ts": "2026-08-26", "kind": "bed", "scene": "orchard-bed", "engine": "fal-ai/lyria2"}
+{"ts": "2026-08-26", "kind": "bed", "scene": "lantern-bed", "engine": "fal-ai/lyria2"}
+{"ts": "2026-08-26", "kind": "bed", "scene": "harbor-bed", "engine": "fal-ai/lyria2"}
+{"ts": "2026-08-26", "kind": "bed", "scene": "slowroad-bed", "engine": "fal-ai/lyria2"}
+{"ts": "2026-08-26", "kind": "master", "scene": "orchard", "gate": "ship_gate pass"}
+{"ts": "2026-08-26", "kind": "master", "scene": "lantern", "gate": "ship_gate pass"}
+{"ts": "2026-08-26", "kind": "master", "scene": "harbor", "gate": "ship_gate pass"}
+{"ts": "2026-08-26", "kind": "master", "scene": "slowroad", "gate": "ship_gate pass"}
+{"ts": "2026-08-26", "kind": "relocation", "scene": "orchard", "from_thread": "1787545130.294609", "to_thread": "1787731809.495279", "why": "the author, 2026-08-26, own thread for the batch, not the original"}
+{"ts": "2026-08-26", "kind": "relocation", "scene": "lantern", "from_thread": "1787545130.294609", "to_thread": "1787731809.495279", "why": "the author, 2026-08-26, own thread for the batch, not the original"}
+{"ts": "2026-08-26", "kind": "relocation", "scene": "harbor", "from_thread": "1787545130.294609", "to_thread": "1787731809.495279", "why": "the author, 2026-08-26, own thread for the batch, not the original"}
+{"ts": "2026-08-26", "kind": "relocation", "scene": "slowroad", "from_thread": "1787545130.294609", "to_thread": "1787731809.495279", "why": "the author, 2026-08-26, own thread for the batch, not the original"}

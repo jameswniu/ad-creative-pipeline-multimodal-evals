@@ -1,0 +1,32 @@
+# tools/pii_review_ledger.txt - human-reviewed dismissals for pii_llm_review.sh.
+#
+# Findings that a human already reviewed and dismissed, so the reviewer never
+# re-litigates them (the "never triage the same issue twice" pattern; see
+# docs/PII-REVIEW.md for each original dismissal and its reasoning).
+#
+# This file is TRACKED on purpose. Every suppression is a publication decision,
+# so each one must arrive in a diff a reviewer can see, exactly like
+# tools/pii_allowlist.txt for the deterministic layer.
+#
+# Format, one rule per line, TAB-separated (tabs because the regex field
+# legitimately contains "|" for alternation; the first version of this file
+# used "|" as the separator and every regex with an alternation silently
+# truncated at it, which the unit test in the same commit caught):
+#   <name> TAB <file-substring> TAB <description-regex> TAB <reason>
+# A finding is suppressed when BOTH the file substring matches its path
+# (* matches any) AND the regex matches its description, case-insensitive.
+# Keep regexes NARROW: an over-broad ledger rule silently hides a real find.
+# Prefer under-ledgering; an unledgered false alarm is an advisory line, not
+# a blocked commit.
+
+vendor-engine-versions	*	avatar[_ ](i{1,3}|iv|v)\b	HeyGen engine version strings, public product tiers, not internal codenames
+own-repo-files	*	(ship_gate|prop_gate|pre_render_sanity|block_unpinned_identity|[a-z_]+_probe(\.py)?|eye_eval|bg_detail|seam_check|scene_simplicity)	names of files inside this repository, visible to the reader
+repo-subject	*	twin video pipeline	the repository's own subject, stated in the README
+hardware-categories	*	(apple silicon|mps|light[- ]field|gpu architecture|display device)	product categories from the README, not an inventory of owned property
+generated-scene-labels	*	(smooth-beach|regen-beach|smooth-bakery|human-bakery|calm wave|take[0-9]-final-pro|fix-beach)	labels of generated video content, not real venues
+author-byline	README	author'?s? (full )?name	the deliberate byline on a portfolio repository
+license-holder	LICENSE	copyright	the license needs a named holder to be a license
+credits-not-currency	*	(personal account usage|cost described in prose|vendor credits?|credit balance|daily (render )?cost)	cost published deliberately in vendor credits, never currency; see docs/NOT-MEASURED.md (pii-allow: this line is a rule ABOUT credit-balance prose; the phrase here is the pattern, not an account state)
+incident-derivations	*	((internal|development|production) (incident|history)|calibration (date|history))	the documented derivation behind each threshold, which is the artifact itself; see docs/PII-REVIEW.md
+companion-repos-on-request	README	(unnamed|second|separate|companion)\b.{0,40}\b(project|repo|repository)	the two companion projects are credited on purpose and named nowhere; withholding the name IS the published decision, so no identifier is present to leak. Proximity rather than adjacency: the first version required the qualifier and the noun to be adjacent and caught 1 of 3 phrasings, because the model rewords the same finding every run ("separate voice-shaping agent project"). A ledger that matches one wording re-litigates the class it was written to close
+consent-gate-workflow	*	consent[- ]gate|training video of a real person	describes the gate a human must clear and the footage it needs; identifies nobody, and disclosing that the gate exists is the reason it is documented

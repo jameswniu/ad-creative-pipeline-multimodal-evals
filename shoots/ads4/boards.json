@@ -1,0 +1,79 @@
+{
+ "doctrine": "Redo from zero, the author 2026-08-26. Message first: scene a is the customer's pain, the narration says what the product is and what to do by the second line, the quirk stays visual and the voice never narrates it. No on-camera mouth moves under narration. No black-void closer looks.",
+ "spots": {
+  "orchard": {
+   "brand": "Orchard Hill Coffee",
+   "engine": "bytedance/seedance-2.0/text-to-video",
+   "audience": "commuters settling for stale pods",
+   "know_do": "fresh-roasted coffee delivered weekly; order a bag",
+   "quirk": "the roast steam leans toward his face, visual only, never mentioned",
+   "scenes": {
+    "a": "Six a.m. kitchen. A man in work clothes takes one sip from a mug beside a pod coffee machine, winces, and pours the whole mug down the sink. His lips stay pressed shut, nobody on camera speaks.",
+    "b": "A plain paper bag of fresh coffee sits on a front doorstep in morning light. A man picks it up and opens the top, and a faint curl of roast steam leans toward his face. His mouth stays closed, nobody on camera speaks.",
+    "c": "Close on a pour-over bloom swelling and breathing, then a man drinks by a bright window, shoulders dropping, eyes closing in relief for a beat. His mouth stays closed except the sip, nobody on camera speaks."
+   },
+   "narration": "That pod you settle for every morning went stale before it reached the shelf. This bag was roasted the week it shipped, and it lands at your door. One slow cup, and Tuesday is suddenly worth waking for.",
+   "closer": "Orchard Hill Coffee, fresh-roasted and delivered weekly. Order your first bag. The pipeline behind this spot is public, link under the video.",
+   "closer_look": "<id>"
+  },
+  "lantern": {
+   "brand": "Lantern Street",
+   "engine": "alibaba/wan-3.0/text-to-video",
+   "audience": "parents awake at three a.m. hearing a noise",
+   "know_do": "a home security app; one glance says the house is fine; get it",
+   "quirk": "the nightlights dim one by one behind her, visual only, never mentioned",
+   "scenes": {
+    "a": "Night interior, handheld feel. A barefoot woman in pajamas sprints down a dark staircase, her phone flashlight swinging wild shadows across family photos on the wall, real urgency in her stride. Nobody on camera speaks.",
+    "b": "She stops in the dark hallway, breathing hard, and raises her phone. ON THE PHONE'S OWN DISPLAY, filling its screen, a security app shows a large clear banner reading SYSTEM STABLE above a row of small green checkmarks. The text sits flat on the glass of the phone and nowhere else. Her mouth stays closed.",
+    "c": "Wide calm hallway shot from behind, she walks back up the stairs unhurried, and the warm nightlights along the corridor dim one after another behind her, the house settling dark and safe. Nobody on camera speaks."
+   },
+   "narration": "A thump at three a.m., and your feet are on the stairs before your eyes are open. One glance at the app and the house answers, doors locked, cameras clear, all is well. Go back to bed, the house keeps watch.",
+   "closer": "Lantern Street, the security app that answers before you are fully awake. Get it tonight. The pipeline behind this spot is public, link under the video.",
+   "closer_look": "<id>",
+   "text_exception": [
+    "b"
+   ]
+  },
+  "harbor": {
+   "brand": "Harbor Lane Realty",
+   "engine": "alibaba/wan-3.0/text-to-video",
+   "audience": "first-time buyers scared of the process",
+   "know_do": "one dedicated agent per street; book a walkthrough",
+   "quirk": "the SOLD sticker lands crooked and stays crooked, visual only, never mentioned",
+   "scenes": {
+    "a": "A young couple at a kitchen table at night, drowning in printed home listings and an open laptop, heads in hands, overwhelmed and tired. Mouths closed, nobody on camera speaks.",
+    "b": "Bright suburban morning. A warm, confident real-estate agent on a porch gives a big genuine two-arm wave, and a young couple at the wide-open white picket gate waves back, relieved and laughing with their mouths closed.",
+    "c": "Close on a lawn sign. Her hand slaps a red SOLD sticker across the front of the For Sale yard sign and it lands slightly tilted; she pats it once and leaves it crooked; behind her the couple hugs. The only readable text is the words on the yard sign and sticker."
+   },
+   "narration": "Forty listings deep and you still can't tell which street is home. One agent, one street, someone who knows every porch on it by name. From first walkthrough to the sticker, one person the whole way.",
+   "closer": "Harbor Lane Realty, one agent for your street, start to sold. Book a walkthrough. The pipeline behind this spot is public, link under the video.",
+   "closer_look": "<id>",
+   "text_exception": [
+    "c"
+   ]
+  },
+  "slowroad": {
+   "brand": "Slow Road Travel",
+   "engine": "bytedance/seedance-2.0/text-to-video",
+   "audience": "burned-out workers doom-scrolling trips they never book",
+   "know_do": "small-group slow trips; book one",
+   "quirk": "the luggage tag flutters like a small bird, then hangs still on arrival, visual only, never mentioned",
+   "scenes": {
+    "a": "Late night bedroom lit only by a phone. A tired woman scrolls short travel videos in bed, her face washed in blue light, then lets the phone drop to her chest with a long exhale. Mouth closed, nobody on camera speaks.",
+    "b": "She stands on the rear open-air platform of a slow vintage train easing through golden countryside, both hands on the railing, wind in her hair, a paper luggage tag on the suitcase beside her fluttering hard like a small bird. She grins with her mouth closed.",
+    "c": "Dusk at a clifftop bus stop above the sea. She sits on her suitcase watching the water, unhurried, and the paper luggage tag beside her hangs perfectly still. Nobody on camera speaks."
+   },
+   "narration": "Another midnight scrolling trips you never book. Small groups, six seats, no rush, and the long way there. Put the phone down and book the slow one.",
+   "closer": "Slow Road Travel, small-group trips at half speed. Book one this week. The pipeline behind this spot is public, link under the video.",
+   "closer_look": "<id>"
+  }
+ },
+ "guard": "Natural skin texture with visible pores and slight imperfections, documentary realism, no beauty smoothing, imperfect practical lighting, real micro-expressions, natural motion timing with small human hesitations. No readable on-screen text anywhere in frame, no logos, no brand marks. Keep hands either fully out of frame or large, simple and clearly articulated. NO narration, NO voiceover, NO captions, NO avatar or presenter, no music, natural ambient sound only. One single continuous live-action scene, about 5 seconds, subject centered, raw b-roll for an edit.",
+ "text_exception_clause": " Exception to the text rule: the one piece of readable on-screen text is exactly the one named in the scene description, rendered exactly where the scene places it, and nothing else.",
+ "card_tags": {
+  "orchard": "Roasted the week it lands.",
+  "lantern": "One glance, then back to sleep.",
+  "harbor": "One agent. One street.",
+  "slowroad": "Go slower, see more."
+ }
+}
