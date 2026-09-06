@@ -520,14 +520,14 @@ def test_loop_graph_steps_match_the_process_table():
 
 
 def test_loop_graph_ownership_matches_the_map():
-    """Each step's stroke classes in the Mermaid graph name the tier or tiers the map generator assigns it."""
+    """Each step's stroke classes in the graph, and each row of the legend under it, name the tiers the map generator assigns."""
     import importlib.util
     import re
     spec = importlib.util.spec_from_file_location("render_map", os.path.join(ROOT, "tools", "render_map.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     readme = open(os.path.join(ROOT, "README.md")).read()
-    graph = readme.split("```mermaid")[1].split("```")[0]
+    graph, after = readme.split("```mermaid")[1].split("```", 1)
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
     title_of = {m.group(1): m.group(2) or m.group(3) for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)}
     owner = {}
@@ -535,8 +535,28 @@ def test_loop_graph_ownership_matches_the_map():
         for node in ids.split(","):
             if node in title_of:
                 owner.setdefault(title_of[node], set()).add(tier)
-    expected = {title: set(tier) if isinstance(tier, tuple) else {tier} for title, _, _, tier in mod.STEPS}
-    assert owner == expected, (owner, expected)
+    tiers = {title: set(tier) if isinstance(tier, tuple) else {tier} for title, _, _, tier in mod.STEPS}
+    assert owner == tiers, (owner, tiers)
+    # the stroke words in the legend must be the patterns the classDefs draw
+    dash = {name: (m or "").strip() for name, m in re.findall(r"^\s+classDef (\w+) [^\n]*?(?:stroke-dasharray:([\d ]+))?,color", graph, re.M)}
+    stroke_of = {"solid": dash["process"], "dashed": dash["outcome"], "dotted": dash["vibe"], "dash-dot": dash["shared"]}
+    assert stroke_of == {"solid": "", "dashed": "6 3", "dotted": "2 3", "dash-dot": "6 3 2 3"}, stroke_of
+    # every legend row names exactly the steps its tier owns
+    lines = after.strip().splitlines()
+    table = [l for l in lines[: next(i for i, l in enumerate(lines + [""]) if l and not l.startswith("|"))] if l.startswith("|")]
+    rows = [[c.strip() for c in l.strip("|").split("|")] for l in table[2:]]
+    expected = {
+        "1 Process": [t for t in tiers if tiers[t] == {"process"}],
+        "2 Outcome": [t for t in tiers if "outcome" in tiers[t]],
+        "3 Vibe": [t for t in tiers if "vibe" in tiers[t]],
+        "shared": [t for t in tiers if len(tiers[t]) > 1],
+    }
+    seen = {}
+    for stroke, tier, owns in rows:
+        assert stroke in stroke_of, stroke
+        seen[tier] = [t for t in tiers if t in owns]
+    assert seen == expected, (seen, expected)
+    assert [r[0] for r in rows] == ["solid", "dashed", "dotted", "dash-dot"], rows
 
 
 if __name__ == "__main__":
