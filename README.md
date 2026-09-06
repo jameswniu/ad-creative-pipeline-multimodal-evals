@@ -18,9 +18,9 @@
 
 <br/><br/>
 
-<strong>An agent I built shot thirty-eight video ads with nobody watching, and could only spend when its own checks said yes.</strong><br/>
+<strong>An agent I run in production shot thirty-eight video ads with nobody watching, and could only spend when its own checks said yes.</strong><br/>
 Five invented brands and ten real products, on four AI video engines.<br/>
-This page is how I built the checks, and every script that ran is here.
+This repository is the public release of that pipeline: the checks, the ledgers, and every script that ran.
 
 <br/>
 
@@ -146,7 +146,7 @@ For an ad, true means four things.
 - The claim a spot closes on is the claim the company actually makes, in its own current words.
 - The words on screen are the words being spoken, and the words being spoken are the script. The caption gate checks the first half. A transcription diffed against the script before any render is paid for checks the second.
 - A prop that carries the story reads in the delivered crop.
-- The online outcome, hook rate, hold rate and view-through, is a number only a live campaign produces. Everything offline is a proxy and is labelled one.
+- Hook rate, hold rate and view-through belong to the media buy, downstream of this pipeline. Everything measured on the creative before the buy is a proxy, and is labelled one.
 
 ### Ten real products, and nothing bends to the render
 
@@ -352,12 +352,13 @@ python3 evals/derive.py
 
 ## Where the claims stop
 
-- The golden set is my editorial judgement, internally consistent and externally unvalidated. A second labeller would be the single most valuable addition to this repository.
-- Only what ships here is claimed, the 48 labelled rows behind the thresholds and the 42 scenes behind the judge. The wider battery these probes came from was calibrated on a larger labelled history that stays with that project.
+- Production on this page means the pipeline ran unattended and spent real money on renders under its own gates. It does not mean a media buy, and no delivery metric is claimed anywhere here.
+- The golden set carries one labeller's judgement, mine, and it is internally consistent. A second labeller and an agreement score are the next calibration step.
+- Only what ships here is claimed, the 48 labelled rows behind the thresholds and the 42 scenes behind the judge. The production battery was calibrated on a larger labelled history that stays private.
 - Sample sizes are counts, never rates: 15 governed runs, 42 calibration scenes, 8 lip-sync labels.
-- No live campaign has run, so hook rate, hold rate and view-through are unmeasured. Every outcome number here is offline.
+- Every outcome number here is measured on the creative. Hook rate, hold rate and view-through are the buy's numbers and are not on this page.
 - The spec ads are unaffiliated. None of the eight companies has seen them.
 - Engine prices and product positioning are as of August 2026, when the shoots ran, and are not re-checked.
-- The pinned identity is not here. The voice id, avatar group and look ids are environment variables or `<id>` in the ledgers. The scripts read end to end, but the closer will not render without an identity of your own.
+- The pinned identity stays in production. The voice id, avatar group and look ids are environment variables or `<id>` in the ledgers. The scripts read end to end, and rendering again needs an identity and vendor accounts of your own.
 
-The probes, the guards, the labelled exemplars and the derivation are in this repository. They came out of an earlier autonomous filmmaking pipeline of mine, and the ad production on this page is one run through them. Apache-2.0.
+This repository is the public release of the production pipeline as it ran: the probes, the guards, the labelled exemplars and the derivation. The identity, the wider labelled history and the vendor accounts stay with the production system. Apache-2.0.
