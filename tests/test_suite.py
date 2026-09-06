@@ -387,5 +387,18 @@ def _main():
     return 1 if failed else 0
 
 
+
+def test_judge_calibration_set_matches_the_rubric():
+    """The README quotes 42 scenes, 16 FAIL and 26 PASS, from the judge rubric. The set ships beside it."""
+    import json
+    rubric = json.load(open(os.path.join(ROOT, "evals", "judge-rubric.json")))
+    calib = json.load(open(os.path.join(ROOT, "evals", "judge-calibration.json")))
+    entries = [v for v in calib.values() if isinstance(v, list)][0]
+    labels = [e["label"] for e in entries]
+    assert (len(entries), labels.count("FAIL"), labels.count("PASS")) == (42, 16, 26), labels
+    stated = rubric["groundedness"]["calibration"]["set"]
+    assert "42" in stated and "16 FAIL" in stated and "26 PASS" in stated, stated
+
+
 if __name__ == "__main__":
     sys.exit(_main())

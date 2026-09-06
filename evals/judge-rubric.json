@@ -1,0 +1,175 @@
+{
+ "_about": "ad4 eval set. ONE rubric for every cut; per-product ground truth lives in specs/<product>.json and is read by these judges. Hard gates are pass/fail and any fail blocks ship. Soft scores are 0-1, reported only for cuts that pass every hard gate.",
+ "version": 1,
+ "canvas": {
+  "width": 1080,
+  "height": 1920,
+  "fps": 25,
+  "runtime_s": [
+   15.0,
+   20.0
+  ]
+ },
+ "structure": {
+  "kind": "mechanical",
+  "gate": "hard",
+  "order": [
+   "hook",
+   "broll_a",
+   "broll_b",
+   "demo",
+   "cta",
+   "end"
+  ],
+  "hook_speech_starts_by_s": 3.0,
+  "caption_safe_zone_frac": [
+   0.1,
+   0.8
+  ],
+  "rules": [
+   "six pieces present in cheat-sheet order (01 character script, 02 product hero, 02 her using it, 03 demo screen, 04 CTA, end card)",
+   "hook speech starts inside the first 3.0 s",
+   "master is 1080x1920 at 25 fps, runtime inside 15-20 s",
+   "burned captions sit inside the vertical safe zone (10%-80% of height)",
+   "brand string present on the end card (our own render, checked by manifest)"
+  ]
+ },
+ "groundedness": {
+  "kind": "eye_gate_with_llm_flagger",
+  "gate": "hard",
+  "gate_holder": "the eye (the author on shipped cuts, the session on every clip); the LLM judge attaches a blind description and a PASS/FAIL flag as evidence, never the verdict",
+  "calibration": {
+   "set": "42 film5 scenes labelled by the eye (16 FAIL, 26 PASS), calibration.json",
+   "v1 sonnet one 300px strip, brief in prompt": {
+    "recall_on_eye_fail": "12/16",
+    "specificity_on_eye_pass": "12/26",
+    "disagreements": "18/42"
+   },
+   "v2 sonnet 3 panels + detail, eye standard in prompt": {
+    "recall_on_eye_fail": "2/16",
+    "specificity_on_eye_pass": "24/26",
+    "disagreements": "16/42"
+   },
+   "v3 sonnet blind describe then judge": {
+    "recall_on_eye_fail": "11/16",
+    "specificity_on_eye_pass": "10/26",
+    "disagreements": "21/42"
+   },
+   "v4 opus blind describe then judge, 8 decisive clips": {
+    "recall_on_eye_fail": "5/5",
+    "specificity_on_eye_pass": "0/3",
+    "disagreements": "3/8",
+    "note": "caught every eye-fail but never for the eye's reason (never named the phone, the tablet or the young woman); failed all three shipped clips on frames outside the 2.5 s window the cut used"
+   },
+   "reading": "the judge misses object and subject substitutions (phone for ring box, tablet for umbrella, young woman for grandmother) and false-alarms on gestalt calls the eye accepts; ~40-50% disagreement however prompted, so it is a flagger, not a gate. Confound found in v3/v4: the eye labelled the trimmed window the cut used, the judge saw the whole 5 s; the pipeline now judges the used window only (panels t0/win).",
+   "how_used": "ad4_physics.py judge runs describe+flag on the used window and writes llm-flag rows; the eye reads the strip plus the description and records eye:claude (session) or eye:author (shipped cuts) verdicts; build-ad4.py honours eye rows only; each eye row records whether it agreed with the flag, so the disagreement rate per leg is reported next to cost"
+  },
+  "strip": {
+   "fps": 3,
+   "tile": "6x3",
+   "frame_width": 300
+  },
+  "panels": {
+   "fps": 3,
+   "cols": 3,
+   "rows": 2,
+   "count": 3,
+   "frame_width": 500,
+   "detail_width": 800,
+   "detail_t": 2.5
+  },
+  "universal_invariants": [
+   "nothing spawns or vanishes mid-shot without a plausible source or exit; objects in flight came from somewhere visible or just off frame",
+   "contact precedes motion; mechanisms are causally whole (a device does what that device does, and no body part sits inside a machine)",
+   "bodies are in possible poses and stay one body; no extra or missing limbs; facial hair, clothing and age do not change within the clip",
+   "the subject's identity and the world stay constant across the clip; a new camera angle is fine, a different person or place is not",
+   "no readable gibberish, invented words, or fake brand marks on the subject or props; incidental real signage or packaging in the background is set dressing"
+  ],
+  "metric": "violations per 10 scenes per leg",
+  "pass_rule": "every spec proposition and every invariant PASS, each with a citing frame index"
+ },
+ "identity": {
+  "kind": "face_embedding",
+  "gate": "hard",
+  "model": "opencv YuNet + SFace (~/models/*.onnx)",
+  "compare": [
+   "hook",
+   "broll_b",
+   "cta"
+  ],
+  "cosine_min": 0.3,
+  "note": "threshold calibrated from same-look HeyGen renders vs a different-person control; SFace cosine > 0.363 is the model's own same-identity line, we run the threshold set by calibrate.py"
+ },
+ "voice_speech": {
+  "kind": "audio_probes",
+  "gate": "hard",
+  "rules": [
+   "one voice across hook, VO and CTA (voice_probe.py consensus, no outlier)",
+   "STT of the audio actually used matches the script line word for word (script_match.sh exit 0)",
+   "sync_probe.py inside its band on the hook and CTA segments"
+  ]
+ },
+ "text_safety": {
+  "kind": "llm_strip",
+  "gate": "hard",
+  "rules": [
+   "no readable text in any engine clip (gibberish lettering, fake logos, signage with words)",
+   "brand string legible on the end card (manifest: we rendered it)"
+  ]
+ },
+ "audio": {
+  "kind": "mechanical",
+  "gate": "hard",
+  "integrated_lufs": [
+   -18.0,
+   -14.0
+  ],
+  "true_peak_dbtp_max": -1.0,
+  "speech_over_bed_db_min": 8.0
+ },
+ "believability": {
+  "kind": "llm_strip_with_spec",
+  "gate": "soft",
+  "questions": [
+   "the product-category object named in the spec is visible in b-roll a",
+   "she is using that product in b-roll b, and it is the same woman as the hook",
+   "the demo screen shows the spec's must-show fields for this product",
+   "the CTA line is specific to this product and brand",
+   "a real company in this category would run this ad as-is (1-5, pass at 4)"
+  ]
+ },
+ "hook_strength": {
+  "kind": "llm_first3s",
+  "gate": "report_only",
+  "questions": [
+   "a human face is on screen in the first second",
+   "the spoken line is intelligible and complete inside 3 s",
+   "the line opens a question or a claim the body must resolve",
+   "there is motion or a change in the first second (not a static frame)"
+  ],
+  "note": "proxy only; the live metric is hook rate = 3s views / impressions, see online/README.md"
+ },
+ "scoring": {
+  "hard_gates": [
+   "structure",
+   "groundedness",
+   "identity",
+   "voice_speech",
+   "text_safety",
+   "audio"
+  ],
+  "soft": [
+   "believability",
+   "hook_strength"
+  ],
+  "per_cut": "mean of soft scores, reported only when all hard gates pass",
+  "per_leg": [
+   "cuts passing of 8",
+   "violations per 10 scenes",
+   "mean soft score",
+   "cost per passing cut (meter deltas)",
+   "re-rolls per cut"
+  ]
+ },
+ "_note": "This rubric was written for the batch that preceded the seven shipped in shoots/. Its calibration set is evals/judge-calibration.json, 42 scenes labelled by the eye. The scripts and per-product specs it names (ad4_physics.py, build-ad4.py, calibrate.py, voice_probe.py, specs/) belong to that earlier batch and are not in this repository; the numbers in the calibration block are what those scripts produced, and tests/test_suite.py checks the set against them."
+}

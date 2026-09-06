@@ -1,0 +1,313 @@
+{
+ "_about": "Labelled film5 scenes. Labels come from the author's eye (FAIL) or from a cut he accepted after the physics loop (PASS), never from a judge. calibrate.py runs the groundedness judge over these and reports agreement. Paths are relative to takes/.",
+ "scenes": {
+  "coaster": {
+   "brief": "A couple on a roller coaster mid-drop, the man opening a small ring box to propose, both screaming with joy, confetti whipped by the wind, golden hour.",
+   "propositions": [
+    "two riders, a couple, are visible in the same coaster car (a solo rider fails)",
+    "the object in the man's hand is a small ring box; a phone, a tablet or any other object fails",
+    "exactly one ring box exists; a second box or a second hand holding one fails",
+    "both riders stay seated in the car; anything visible of the car, track or restraints is coherent (out of frame is fine)"
+   ]
+  },
+  "umbrella": {
+   "brief": "Two rain-soaked strangers laughing together under one shared umbrella at night on a city street, warm bokeh lights behind them.",
+   "propositions": [
+    "one umbrella shared by two people",
+    "the object overhead is an umbrella with a canopy and a handle; a tablet, a screen or any flat rigid object fails",
+    "the scene reads as rain (wet surfaces, spray, droplets or streaks) and both people are under the canopy",
+    "night street with lights behind them"
+   ]
+  },
+  "meter": {
+   "brief": "A man in a soaked business suit screaming furiously at a parking meter in the rain, gesturing with whole-arm movements, deadpan wide framing.",
+   "propositions": [
+    "a parking meter exists in frame (no meter fails)",
+    "the man's anger is directed at the meter: he stands at it and engages it at some point (a glance up at the sky mid-rant is fine)",
+    "the scene reads as rain-soaked (wet street, wet suit, matted hair, spray or streaks)",
+    "the body is in possible poses with the arms doing something angry (any gesture size is fine)"
+   ]
+  },
+  "copier": {
+   "brief": "An office worker calmly photocopying her own face, lifting the copier lid as printed copies of her face stack in the tray, fluorescent office light.",
+   "propositions": [
+    "she is photocopying her own live face: her face goes to the copier (on or right over the glass, lid up or down) at some point; copying a printed photograph of her face instead fails",
+    "the copier produces prints and, where a print is visible, it shows her face",
+    "the copier stays a coherent machine: lid, glass and tray in their places, and no head or body part sits inside the tray or the housing",
+    "one woman with one body in an office throughout"
+   ]
+  },
+  "dog": {
+   "brief": "A child at a kitchen chalkboard patiently teaching calculus to a golden retriever sitting attentively at a tiny desk, evening lamp light.",
+   "propositions": [
+    "a golden retriever sits at a tiny desk",
+    "a child stands at a chalkboard",
+    "the chalkboard carries math-like marks; any lettering is not readable words",
+    "child and dog bodies are in possible poses with constant scale"
+   ]
+  },
+  "granny": {
+   "brief": "A grandmother drag-racing a mobility scooter down a supermarket aisle, groceries flying from the basket, shelves blurring past.",
+   "propositions": [
+    "the rider is an elderly woman, a grandmother, with grey or white hair and an aged face (use the detail frame); a young woman or a man fails",
+    "groceries in flight are leaving the scooter's basket or trailing behind it; items appearing far from the basket with no path from it fail (an item entering from just off frame is fine)",
+    "the scene is a supermarket aisle with shelves",
+    "the scooter and rider stay one coherent body at constant scale"
+   ]
+  }
+ },
+ "clips": [
+  {
+   "path": "film5-wan/wan-copier-g-raw.mp4",
+   "scene": "copier",
+   "label": "FAIL",
+   "why": "her head rests in the output area under an open feeder (the author, 2026-08-23)"
+  },
+  {
+   "path": "film5-mm/mm-granny-cl-2k-raw.mp4",
+   "scene": "granny",
+   "label": "FAIL",
+   "why": "groceries materialize mid-air with no source (the author: fruits popping up out of nowhere)"
+  },
+  {
+   "path": "film5-mm/mm-granny-2k-raw.mp4",
+   "scene": "granny",
+   "label": "FAIL",
+   "why": "same pop-in on the guarded original"
+  },
+  {
+   "path": "film5/hg-coaster/raw.mp4",
+   "scene": "coaster",
+   "label": "FAIL",
+   "why": "phone for ring box (film5-hg cull)"
+  },
+  {
+   "path": "film5/hg-coaster2/raw.mp4",
+   "scene": "coaster",
+   "label": "FAIL",
+   "why": "duplicated ring box (film5-hg cull)"
+  },
+  {
+   "path": "film5/hg-meter/raw.mp4",
+   "scene": "meter",
+   "label": "FAIL",
+   "why": "no meter in frame (film5-hg cull)"
+  },
+  {
+   "path": "film5/hg-umbrella/raw.mp4",
+   "scene": "umbrella",
+   "label": "FAIL",
+   "why": "tablet for umbrella (film5-hg cull)"
+  },
+  {
+   "path": "film5-veo/veo-copier-cl-raw.mp4",
+   "scene": "copier",
+   "label": "FAIL",
+   "why": "photocopying a photo of her face, face never on the glass"
+  },
+  {
+   "path": "film5-veo/veo-granny-raw.mp4",
+   "scene": "granny",
+   "label": "FAIL",
+   "why": "infinite basket, items without source"
+  },
+  {
+   "path": "film5-s20/s20-coaster-raw.mp4",
+   "scene": "coaster",
+   "label": "FAIL",
+   "why": "phone for ring box"
+  },
+  {
+   "path": "film5-omni/omni-meter-raw.mp4",
+   "scene": "meter",
+   "label": "FAIL",
+   "why": "no meter in frame"
+  },
+  {
+   "path": "film5-fal/fal-granny-guarded-raw.mp4",
+   "scene": "granny",
+   "label": "FAIL",
+   "why": "young subject, grandmother swapped"
+  },
+  {
+   "path": "film5-kling/kling-coaster-cl-raw.mp4",
+   "scene": "coaster",
+   "label": "FAIL",
+   "why": "solo rider, the couple is missing"
+  },
+  {
+   "path": "film5-wan3/wan3-g-granny-raw.mp4",
+   "scene": "granny",
+   "label": "FAIL",
+   "why": "grandfather, subject swap"
+  },
+  {
+   "path": "film5-rw/rw-coaster-raw.mp4",
+   "scene": "coaster",
+   "label": "FAIL",
+   "why": "prop reads as a phone (soft, re-rolled)"
+  },
+  {
+   "path": "film5-rw/rw-copier-raw.mp4",
+   "scene": "copier",
+   "label": "FAIL",
+   "why": "prints never shown (soft, re-rolled)"
+  },
+  {
+   "path": "film5-wan/wan-copier-g2-raw.mp4",
+   "scene": "copier",
+   "label": "PASS",
+   "why": "re-roll on physical wording, passed the loop"
+  },
+  {
+   "path": "film5-mm/mm-granny-cl2-2k-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "groceries bounce out of the basket, shipped"
+  },
+  {
+   "path": "film5-mm/mm-granny-g2-2k-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "guarded re-roll, shipped"
+  },
+  {
+   "path": "film5/hg-coaster3/raw.mp4",
+   "scene": "coaster",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5/hg-meter2/raw.mp4",
+   "scene": "meter",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5/hg-umbrella2/raw.mp4",
+   "scene": "umbrella",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5/hg-copier/raw.mp4",
+   "scene": "copier",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5/hg-dog/raw.mp4",
+   "scene": "dog",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5/hg-granny/raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "shipped in film5-hg"
+  },
+  {
+   "path": "film5-veo/veo-copier-cl3-raw.mp4",
+   "scene": "copier",
+   "label": "PASS",
+   "why": "face on glass, prints emerging, shipped"
+  },
+  {
+   "path": "film5-veo/veo-granny-g2-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "guarded re-roll, shipped"
+  },
+  {
+   "path": "film5-s20/s20-coaster4-raw.mp4",
+   "scene": "coaster",
+   "label": "PASS",
+   "why": "re-roll, shipped"
+  },
+  {
+   "path": "film5-omni/omni2-meter-raw.mp4",
+   "scene": "meter",
+   "label": "PASS",
+   "why": "re-roll with meter in frame, shipped"
+  },
+  {
+   "path": "film5-fal/fal-granny-g2-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "explicit grandmother wording, shipped"
+  },
+  {
+   "path": "film5-kling/kling-coaster-cl2-raw.mp4",
+   "scene": "coaster",
+   "label": "PASS",
+   "why": "couple in frame, shipped"
+  },
+  {
+   "path": "film5-wan3/wan3-g-granny2-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "grandmother re-roll, shipped"
+  },
+  {
+   "path": "film5-rw/rw-coaster2-raw.mp4",
+   "scene": "coaster",
+   "label": "PASS",
+   "why": "velvet box with ring visible, shipped"
+  },
+  {
+   "path": "film5-rw/rw-copier2-raw.mp4",
+   "scene": "copier",
+   "label": "PASS",
+   "why": "face on glass, prints emerging, shipped"
+  },
+  {
+   "path": "film5-mm/mm-coaster-cl-2k-raw.mp4",
+   "scene": "coaster",
+   "label": "PASS",
+   "why": "first roll, eye-checked, shipped"
+  },
+  {
+   "path": "film5-mm/mm-copier-cl-2k-raw.mp4",
+   "scene": "copier",
+   "label": "PASS",
+   "why": "first roll, eye-checked, shipped"
+  },
+  {
+   "path": "film5-veo/veo-meter-cl-raw.mp4",
+   "scene": "meter",
+   "label": "PASS",
+   "why": "first roll, eye-checked, shipped"
+  },
+  {
+   "path": "film5-veo/veo-dog-cl-raw.mp4",
+   "scene": "dog",
+   "label": "PASS",
+   "why": "first roll, eye-checked, shipped (chalk math kept as set dressing)"
+  },
+  {
+   "path": "film5-veo/veo-umbrella-cl-raw.mp4",
+   "scene": "umbrella",
+   "label": "PASS",
+   "why": "first roll, eye-checked, shipped"
+  },
+  {
+   "path": "film5-wan/wan-granny-g-raw.mp4",
+   "scene": "granny",
+   "label": "PASS",
+   "why": "explicitly re-checked in the wan physics loop, launches from the basket crest"
+  },
+  {
+   "path": "film5-wan/wan-meter-g-raw.mp4",
+   "scene": "meter",
+   "label": "PASS",
+   "why": "wan physics loop pass"
+  },
+  {
+   "path": "film5-wan/wan-umbrella-g-raw.mp4",
+   "scene": "umbrella",
+   "label": "PASS",
+   "why": "wan physics loop pass"
+  }
+ ]
+}
