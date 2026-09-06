@@ -9,12 +9,12 @@
 <br/>
 
 <a href="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/actions/workflows/checks.yml"><img alt="checks" src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/actions/workflows/checks.yml/badge.svg?branch=main"></a>
-<img alt="ad versions: 28, across 4 video engines" src="https://img.shields.io/badge/ad_versions-28_across_4_engines-e6c65a?style=flat-square&labelColor=15120f">
-<img alt="spec ads: 10, for real products" src="https://img.shields.io/badge/spec_ads-10_for_real_products-6b6259?style=flat-square&labelColor=15120f">
-<img alt="spend: every render gated first" src="https://img.shields.io/badge/spend-every_render_gated_first-6b6259?style=flat-square&labelColor=15120f">
-<img alt="graded by hand: 48 exemplars, 42 scenes" src="https://img.shields.io/badge/graded_by_hand-48_exemplars_%C2%B7_42_scenes-6b6259?style=flat-square&labelColor=15120f">
-<img alt="thresholds traced to those grades: 10 of 10, and 10 of 10 named gating thresholds derived from labelled exemplars" src="https://img.shields.io/badge/thresholds_traced_to_grades-10%2F10_derived-2e7d4f?style=flat-square&labelColor=15120f">
-<img alt="license: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-6b6259?style=flat-square&labelColor=15120f">
+<img alt="ad versions: 28, across 4 video engines" src="https://img.shields.io/badge/ad_versions-28_across_4_engines-d6bc7a?style=flat-square&labelColor=231a14">
+<img alt="spec ads: 10, for real products" src="https://img.shields.io/badge/spec_ads-10_for_real_products-6e6256?style=flat-square&labelColor=231a14">
+<img alt="spend: every render gated first" src="https://img.shields.io/badge/spend-every_render_gated_first-6e6256?style=flat-square&labelColor=231a14">
+<img alt="graded by hand: 48 exemplars, 42 scenes" src="https://img.shields.io/badge/graded_by_hand-48_exemplars_%C2%B7_42_scenes-6e6256?style=flat-square&labelColor=231a14">
+<img alt="thresholds traced to those grades: 10 of 10, and 10 of 10 named gating thresholds derived from labelled exemplars" src="https://img.shields.io/badge/thresholds_traced_to_grades-10%2F10_derived-2e7d64?style=flat-square&labelColor=231a14">
+<img alt="license: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-6e6256?style=flat-square&labelColor=231a14">
 
 <br/><br/>
 
