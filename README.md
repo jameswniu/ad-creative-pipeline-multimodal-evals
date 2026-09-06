@@ -18,7 +18,7 @@
 
 <br/><br/>
 
-<strong>An agent I run in production shot thirty-eight video ads with nobody watching, and could only spend when its own checks said yes.</strong><br/>
+<strong>A multi-agent system I run in production shot thirty-eight video ads with nobody watching, and could only spend when its own checks said yes.</strong><br/>
 Five invented brands and ten real products, on four AI video engines.<br/>
 This repository is the public release of that pipeline: the checks, the ledgers, and every script that ran.
 
@@ -303,8 +303,8 @@ I set the rules and watched. I wrote no scripts for this shoot and supplied five
 - the rule that the most arresting beat opens the film
 - the rule that every human on screen is the same presenter
 
-- The agent loop-engineered the rest, boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger.
-- The loop itself is the industry's own, hypothesis, variations, tests, winners, run by an agent instead of a team.
+- The agents loop-engineered the rest, boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger.
+- The loop itself is the industry's own, hypothesis, variations, tests, winners, run by a multi-agent system instead of a team.
 - The evals were designed and calibrated before a single render was paid for.
 
 ## The loop, as a map
