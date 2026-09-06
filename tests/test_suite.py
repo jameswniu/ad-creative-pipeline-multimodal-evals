@@ -518,5 +518,26 @@ def test_loop_graph_steps_match_the_process_table():
     assert graphed == drawn, (graphed, drawn)
 
 
+
+def test_loop_graph_ownership_matches_the_map():
+    """Each step's stroke classes in the Mermaid graph name the tier or tiers the map generator assigns it."""
+    import importlib.util
+    import re
+    spec = importlib.util.spec_from_file_location("render_map", os.path.join(ROOT, "tools", "render_map.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    readme = open(os.path.join(ROOT, "README.md")).read()
+    graph = readme.split("```mermaid")[1].split("```")[0]
+    run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
+    title_of = {m.group(1): m.group(2) or m.group(3) for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)}
+    owner = {}
+    for ids, tier in re.findall(r"^\s+class ([\w,]+) (process|outcome|vibe)\s*$", graph, re.M):
+        for node in ids.split(","):
+            if node in title_of:
+                owner.setdefault(title_of[node], set()).add(tier)
+    expected = {title: set(tier) if isinstance(tier, tuple) else {tier} for title, _, _, tier in mod.STEPS}
+    assert owner == expected, (owner, expected)
+
+
 if __name__ == "__main__":
     sys.exit(_main())
