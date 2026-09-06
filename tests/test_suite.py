@@ -502,5 +502,21 @@ def test_system_map_steps_match_the_process_table():
     assert written == drawn, (written, drawn)
 
 
+
+def test_loop_graph_steps_match_the_process_table():
+    """The Mermaid loop graph names the same seven steps as the map and the process table, in order."""
+    import importlib.util
+    import re
+    spec = importlib.util.spec_from_file_location("render_map", os.path.join(ROOT, "tools", "render_map.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    drawn = [step[0] for step in mod.STEPS]
+    readme = open(os.path.join(ROOT, "README.md")).read()
+    graph = readme.split("```mermaid")[1].split("```")[0]
+    run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
+    graphed = [a or b for a, b in re.findall(r'\w+(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)]
+    assert graphed == drawn, (graphed, drawn)
+
+
 if __name__ == "__main__":
     sys.exit(_main())
