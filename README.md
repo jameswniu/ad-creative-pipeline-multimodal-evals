@@ -319,7 +319,7 @@ The same loop as a graph, top to bottom, with what the figure leaves out. Each s
 
 
 ```mermaid
-%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 30, 'rankSpacing': 36, 'padding': 8, 'diagramPadding': 4, 'wrappingWidth': 520, 'subGraphTitleMargin': {'top': 6, 'bottom': 14}}, 'themeVariables': {'fontSize': '18px', 'lineColor': '#5f626a', 'edgeLabelBackground': '#ffffff', 'clusterBkg': '#f4f4f7', 'clusterBorder': '#5f626a', 'titleColor': '#18181c'}}}%%
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 16, 'rankSpacing': 8, 'padding': 4, 'diagramPadding': 2, 'wrappingWidth': 520, 'subGraphTitleMargin': {'top': 4, 'bottom': 8}}, 'themeVariables': {'fontSize': '16px', 'lineColor': '#5f626a', 'edgeLabelBackground': '#ffffff', 'clusterBkg': '#f4f4f7', 'clusterBorder': '#5f626a', 'titleColor': '#18181c'}}}%%
 flowchart TD
     subgraph RUN["The run · every request and landing ledgered"]
         direction TB
