@@ -12,7 +12,7 @@
 # They are system binaries; install them with your package manager.
 
 [project]
-name = "ad-creative-pipeline-multimodal-evals"
+name = "autonomous-ads-pipeline-multimodal-evals"
 version = "0.1.0"
 description = "Three-tier eval harness (process, outcome, quality) for agentic AI-generated video ads"
 requires-python = ">=3.10"
