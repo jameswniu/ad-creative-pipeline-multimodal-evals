@@ -514,7 +514,11 @@ def test_loop_graph_steps_match_the_process_table():
     readme = open(os.path.join(ROOT, "README.md")).read()
     graph = readme.split("```mermaid")[1].split("```")[0]
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
-    graphed = [(a or b).split(" \u00b7 ")[0] for a, b in re.findall(r'\w+(?:\["([^"]+)"\]|\{\{?"([^"]+)"\}\}?)', run)]
+    title_of = {m.group(1): (m.group(2) or m.group(3)).split(" \u00b7 ")[0] for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{\{?"([^"]+)"\}\}?)', run)}
+    # the spine is the one line that chains the steps with arrows, read its ids in order
+    spine = max(run.splitlines(), key=lambda l: l.count("-->"))
+    ids = re.findall(r'(?:^|-->)\s*(\w+)', spine.strip())
+    graphed = [title_of[i] for i in ids]
     assert graphed == drawn, (graphed, drawn)
 
 
@@ -530,10 +534,12 @@ def test_loop_graph_ownership_matches_the_map():
     graph, after = readme.split("```mermaid")[1].split("```", 1)
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
     title_of = {m.group(1): (m.group(2) or m.group(3)).split(" \u00b7 ")[0] for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{\{?"([^"]+)"\}\}?)', run)}
+    spine = max(run.splitlines(), key=lambda l: l.count("-->"))
+    steps = set(re.findall(r'(?:^|-->)\s*(\w+)', spine.strip()))
     owner = {}
     for ids, tier in re.findall(r"^\s+class ([\w,]+) (process|outcome|quality)\s*$", graph, re.M):
         for node in ids.split(","):
-            if node in title_of:
+            if node in steps:
                 owner.setdefault(title_of[node], set()).add(tier)
     tiers = {title: set(tier) if isinstance(tier, tuple) else {tier} for title, _, _, tier in mod.STEPS}
     assert owner == tiers, (owner, tiers)
@@ -558,9 +564,14 @@ def test_loop_graph_ownership_matches_the_map():
     assert seen == expected, (seen, expected)
     assert [r[0].lower() for r in rows] == ["solid", "dashed", "dotted", "dash-dot"], rows
     # the edges are the page's own state machine, so their endpoints are pinned too
-    edges = {tuple(e) for e in re.findall(r"^\s+(\w+) (?:-->|-\.->)(?:\|\"[^\"]*\"\|)? *(\w+)\s*$", graph, re.M)}
-    for pair in [("AG", "R"), ("AG", "EYE"), ("EYE", "SG"), ("SG", "BU"), ("D", "L"), ("L", "B")]:
+    edges = {tuple(e) for e in re.findall(r"^\s+(\w+) (?:-->|-\.->)(?:\|\"[^\"]*\"\|)? *(\w+)(?:\[.*\]|\{\{.*\}\})?\s*$", graph, re.M)}
+    for pair in [("AG", "EYE"), ("EYE", "SG"), ("D", "L")]:
         assert pair in edges, (pair, sorted(edges))
+    # the fail paths ride on the gate labels now, so no loop edge may sneak back in and bend the spine
+    assert not {("AG", "R"), ("SG", "BU"), ("L", "B")} & edges, sorted(edges)
+    # the invisible twin of the eye exists only to keep the spine straight, it must stay unclassed and unlabeled as a step
+    assert re.search(r"^\s+class GH ghost\s*$", graph, re.M), "ghost class"
+    assert "GH" not in steps
 
 
 if __name__ == "__main__":
