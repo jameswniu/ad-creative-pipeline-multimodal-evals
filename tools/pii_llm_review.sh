@@ -2,7 +2,7 @@
 # tools/pii_llm_review.sh - the judgement layer of the pre-publish PII gate.
 #
 # Run standalone:   bash tools/pii_llm_review.sh
-# Staged only:      bash tools/pii_llm_review.sh --staged
+# Staged only:      bash tools/pii_llm_review.sh --staged   (reads the INDEX, not the tree)
 # Explicit paths:   bash tools/pii_llm_review.sh path/one path/two
 #
 # EXIT CODES
@@ -56,7 +56,20 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # one chunk and keeps its context.
 CHUNK_BYTES="${PII_LLM_CHUNK_BYTES:-12000}"
 
+# Staged mode reviews the INDEX, so the index blobs are written out here and
+# read from here. It sits inside TMPDIR_RUN, so the EXIT trap below removes it
+# with everything else the run created.
 TMPDIR_RUN="$(mktemp -d "${TMPDIR:-/tmp}/pii_llm.XXXXXX")" || exit 2
+STAGED_ROOT="$TMPDIR_RUN/staged"
+# Staged submodule paths, held in memory rather than in a file. A submodule is
+# index mode 160000 and carries no blob, so it is the one entry that is
+# legitimately unreadable. Nothing in the integrity check below may depend on a
+# successful write, because a failed write is the thing being checked for.
+STAGED_GITLINKS=""
+is_gitlink() {
+  case $'\n'"$STAGED_GITLINKS"$'\n' in *$'\n'"$1"$'\n'*) return 0 ;; esac
+  return 1
+}
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 
 # ---------------------------------------------------------------------------
@@ -115,10 +128,73 @@ done
 FILELIST="$TMPDIR_RUN/files.lst"
 case "$MODE" in
   staged)
-    ( cd "$REPO_ROOT" && git diff --cached --name-only --diff-filter=ACMR 2>/dev/null ) \
+    # The index, not the working tree. Names came from the index here and bytes
+    # came from disk, so a secret staged and then edited out of the file was
+    # reviewed in its cleaned-up form while the commit still carried the
+    # original, and a partially staged file was reviewed on its unstaged half.
+    # The deterministic scanner beside this one had the same defect and is
+    # fixed the same way, because the pre-commit hook runs both and a gate is
+    # only as honest as the bytes it read.
+    mkdir -p "$STAGED_ROOT" || {
+      echo "pii_llm_review: cannot create the staged snapshot directory $STAGED_ROOT" >&2
+      exit 2
+    }
+    STAGED_GITLINKS="$(git -C "$REPO_ROOT" ls-files --stage 2>/dev/null \
+      | awk -F'\t' '{split($1,a," "); if (a[1]=="160000") print $2}')"
+    git -C "$REPO_ROOT" -c core.quotePath=false \
+        diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
       | while IFS= read -r rel; do
-          [ -n "$rel" ] && [ -f "$REPO_ROOT/$rel" ] && printf '%s\n' "$REPO_ROOT/$rel"
+          [ -n "$rel" ] || continue
+          # Only a genuine parent component escapes the snapshot root. An
+          # earlier cut matched any name beginning with a pair of dots, which
+          # silently dropped ordinary files like ..env out of the review.
+          case "$rel" in /*|..|../*|*/../*|*/..) continue ;; esac
+          is_gitlink "$rel" && continue
+          # Nothing in this loop decides whether the run may pass. The
+          # integrity check below rules, and it reads the snapshot itself
+          # rather than any record this loop managed to write.
+          mkdir -p "$STAGED_ROOT/$(dirname "$rel")" 2>/dev/null || continue
+          git -C "$REPO_ROOT" show ":$rel" > "$STAGED_ROOT/$rel" 2>/dev/null \
+            && printf '%s\n' "$STAGED_ROOT/$rel"
         done > "$FILELIST"
+
+    # POSITIVE verification, the same shape as the deterministic scanner's.
+    # Every staged path is either a submodule or must exist in the snapshot at
+    # exactly the byte count the index records, because size equality is what
+    # catches the truncated write a full disk produces. It depends on no marker
+    # file: the disk that stopped the blob being written would also stop the
+    # failure being recorded, and an empty list is the one input this tool
+    # answers with a cheerful exit 0.
+    staged_bad=""
+    staged_want=0
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      case "$rel" in /*|..|../*|*/../*|*/..) staged_bad="$staged_bad
+  $rel (path escapes the snapshot root)"; continue ;; esac
+      is_gitlink "$rel" && continue
+      staged_want=$((staged_want + 1))
+      want="$(git -C "$REPO_ROOT" cat-file -s ":$rel" 2>/dev/null)"
+      have="$(wc -c < "$STAGED_ROOT/$rel" 2>/dev/null | tr -d ' ')"
+      if [ -z "$want" ] || [ "$want" != "${have:-missing}" ]; then
+        staged_bad="$staged_bad
+  $rel (index says ${want:-unreadable} bytes, snapshot has ${have:-nothing})"
+      fi
+    done < <(git -C "$REPO_ROOT" -c core.quotePath=false \
+               diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+
+    if [ -n "$staged_bad" ]; then
+      echo "pii_llm_review: the staged snapshot is incomplete:$staged_bad" >&2
+      echo "RESULT: FAIL CLOSED. Those files were not reviewed, and not reviewed" >&2
+      echo "is not the same as clean." >&2
+      exit 2
+    fi
+    staged_have="$(wc -l < "$FILELIST" | tr -d ' ')"
+    if [ "$staged_have" -lt "$staged_want" ]; then
+      echo "pii_llm_review: $staged_want staged file(s) were snapshotted but only" >&2
+      echo "$staged_have reached the review list." >&2
+      echo "RESULT: FAIL CLOSED. A list that lost its contents is not a review." >&2
+      exit 2
+    fi
     ;;
   explicit)
     printf '%s\n' "${EXPLICIT[@]}" > "$FILELIST"
@@ -181,18 +257,50 @@ new_chunk() {
   : > "$current"
 }
 while IFS= read -r f; do
-  rel="${f#$REPO_ROOT/}"
-  {
-    printf '\n===== FILE: %s =====\n' "$rel"
+  # The label the model quotes back must be the repository path. In staged mode
+  # the bytes come from the snapshot, so that prefix is stripped first; nothing
+  # downstream should ever see a temporary directory.
+  rel="${f#"$STAGED_ROOT"/}"
+  rel="${rel#"$REPO_ROOT"/}"
+  # BOTH writes are checked, not just the header. Counting file markers alone
+  # is not integrity: if the scratch filesystem fills after the header lands,
+  # cat stops part way through the content, the marker count still matches, and
+  # the reviewer is handed a file whose tail it never saw. It then answers
+  # honestly about what it read and the answer is wrong about the file. The
+  # staged snapshot consumes temporary space this tool did not use before, so
+  # this is the run where that becomes reachable.
+  if ! {
+    printf '\n===== FILE: %s =====\n' "$rel" &&
     # Line numbers are included so the model can point at a line, and so its
     # output is comparable with the deterministic scanner's path:line output.
     cat -n "$f"
-  } >> "$current"
+  } >> "$current"; then
+    echo "pii_llm_review: could not write $rel into the review corpus." >&2
+    echo "RESULT: FAIL CLOSED. A file the reviewer never fully received has not" >&2
+    echo "been reviewed. Check for a full disk on ${TMPDIR:-/tmp}." >&2
+    exit 2
+  fi
   size=$(wc -c < "$current" | tr -d ' ')
   [ "$size" -ge "$CHUNK_BYTES" ] && new_chunk
 done < "$TEXTLIST"
 find "$CHUNKDIR" -type f -size 0 -delete 2>/dev/null
 N_CHUNKS=$(find "$CHUNKDIR" -type f | wc -l | tr -d ' ')
+
+# CHUNK INTEGRITY. Every file that reached the text list must appear in exactly
+# one chunk, and the file markers are how that is counted. A scratch write that
+# failed part way through, which is what a full temporary filesystem produces
+# after a large snapshot, would drop files off the end of the last chunk and
+# this tool would review a shorter corpus while reporting on the longer one.
+# Unreviewed is not clean, and a silently shorter corpus is unreviewed.
+_n_marked=$(cat "$CHUNKDIR"/* 2>/dev/null | grep -c '^===== FILE: ' | tr -d ' ')
+: "${_n_marked:=0}"
+if [ "$_n_marked" -ne "$N_FILES" ]; then
+  echo "pii_llm_review: $N_FILES file(s) to review but $_n_marked reached a chunk." >&2
+  echo "RESULT: FAIL CLOSED. The corpus lost files on the way to the reviewer," >&2
+  echo "and a shorter corpus is not a clean one. Check for a full disk on" >&2
+  echo "${TMPDIR:-/tmp}." >&2
+  exit 2
+fi
 
 # ---------------------------------------------------------------------------
 # The prompt. Redesigned 2026-07-29 after the chunk-verdict version saturated,

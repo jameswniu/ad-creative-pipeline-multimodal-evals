@@ -2,7 +2,7 @@
 # tools/pii_scan.sh - deterministic pre-publish PII gate for this repository.
 #
 # Run standalone:   bash tools/pii_scan.sh
-# Staged files:     bash tools/pii_scan.sh --staged
+# Staged files:     bash tools/pii_scan.sh --staged   (reads the INDEX, not the tree)
 # Explicit paths:   bash tools/pii_scan.sh path/one path/two
 # Report only:      PII_SCAN_SOFT=1 bash tools/pii_scan.sh    (always exits 0)
 #
@@ -29,7 +29,11 @@
 #   employer name, private repo names, the author's city, or a colleague's name
 #   leaks exactly what it is meant to prevent. So every project-specific string
 #   is loaded at runtime from two local, gitignored inputs:
-#       tools/pii_context.txt   one regex fragment per line, project-specific
+#       tools/pii_context.txt   one RULE per line, project-specific. A rule is
+#                               SEVERITY tab CLASS tab LABEL tab REGEX, with an
+#                               optional fifth grep-flags field. It is not a
+#                               bare regex fragment; this line said it was, and
+#                               a fragment loads as nothing at all.
 #       tools/pii_names.txt     one "First Last" per line, third-party names
 #   plus the person roster from a local shared library if one is installed.
 #   When those inputs are missing the affected check is SKIPPED and a NOTE is
@@ -61,6 +65,17 @@ MEDIALIST="$TMPDIR_RUN/media.lst"
 HITS="$TMPDIR_RUN/hits.lst"
 : > "$HITS"
 
+# Staged mode scans the INDEX, so the index blobs are written out here and read
+# from here. This lives inside TMPDIR_RUN, so the EXIT trap above removes it
+# along with everything else the run created.
+STAGED_ROOT="$TMPDIR_RUN/staged"
+# Staged submodule paths, held in memory rather than in a file. A submodule is
+# index mode 160000 and carries no blob, so it is the one entry that is
+# legitimately unreadable, and it is named here rather than inferred from an
+# extraction failure. Nothing about the integrity check below may depend on a
+# successful write, because a failed write is the thing being checked for.
+STAGED_GITLINKS=""
+
 SKIPPED_CHECKS=()
 SUPPRESSED=0
 
@@ -79,16 +94,81 @@ for arg in "$@"; do
   esac
 done
 
+# The staging directory is created HERE, at the top level, rather than inside
+# build_filelist. That function runs inside a pipeline, so it runs in a
+# subshell, and an exit from a subshell would leave the caller with an empty
+# file list, which this scanner reports as "nothing to scan" and exits 0 on.
+# A staging directory that could not be created must stop the run, not empty it.
+if [ "$MODE" = "staged" ]; then
+  mkdir -p "$STAGED_ROOT" || {
+    echo "pii_scan: cannot create the staged snapshot directory $STAGED_ROOT" >&2
+    exit 2
+  }
+  STAGED_GITLINKS="$(git -C "$REPO_ROOT" ls-files --stage 2>/dev/null \
+    | awk -F'\t' '{split($1,a," "); if (a[1]=="160000") print $2}')"
+fi
+
+# True when $1 is one of the staged submodule paths. A pure shell membership
+# test, so it costs no process and needs no file.
+is_gitlink() {
+  case $'\n'"$STAGED_GITLINKS"$'\n' in *$'\n'"$1"$'\n'*) return 0 ;; esac
+  return 1
+}
+
+# The paths this scanner deliberately never reads, because they are the
+# scanner's own configuration and two of them hold, by design, exactly the
+# content it exists to detect. Named once so the file list and the staged
+# integrity check below cannot disagree about what is expected to be there.
+is_own_config() {
+  case "$1" in
+    tools/pii_scan.sh|tools/pii_allowlist.txt|tools/pii_context.txt|tools/pii_names.txt) return 0 ;;
+  esac
+  return 1
+}
+
 # ---------------------------------------------------------------------------
 # File list
 # ---------------------------------------------------------------------------
 build_filelist() {
   case "$MODE" in
     staged)
-      ( cd "$REPO_ROOT" && git diff --cached --name-only --diff-filter=ACMR 2>/dev/null ) \
+      # The question this mode answers is what the COMMIT will carry, and that
+      # is the index, not the working tree. This branch used to take its names
+      # from the index and then read its bytes from disk, which are two
+      # different things whenever they disagree:
+      #   - a secret staged and then edited out of the file passed the gate
+      #     while the committed blob still carried it
+      #   - a partially staged file was judged on the unstaged half
+      #   - a staged file deleted from the tree disappeared from the scan
+      # None of those is a contrived interleave. All three are ordinary git.
+      #
+      # So every staged blob is written out under STAGED_ROOT and scanned
+      # there, text and media alike. Paths keep their repository-relative
+      # shape below STAGED_ROOT, so an allowlist entry still matches on its
+      # path substring and an inline pii-allow marker is read from the bytes
+      # being committed rather than from whatever the tree happens to hold.
+      # record() maps the prefix back so no temporary path is ever printed.
+      git -C "$REPO_ROOT" -c core.quotePath=false \
+          diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
         | while IFS= read -r rel; do
             [ -n "$rel" ] || continue
-            [ -f "$REPO_ROOT/$rel" ] && printf '%s\n' "$REPO_ROOT/$rel"
+            # A path that would escape the snapshot root. Only a genuine parent
+            # component counts. An earlier cut matched any name beginning with
+            # a pair of dots, which silently dropped ordinary files like ..env
+            # and ..secrets/token out of the scan, and a dropped file is an
+            # unscanned file. git never emits a traversing path, and if one
+            # ever appeared the integrity check below the pipeline would see
+            # the missing snapshot and stop the run.
+            case "$rel" in /*|..|../*|*/../*|*/..) continue ;; esac
+            is_gitlink "$rel" && continue
+            # Nothing in this loop decides whether the run may pass. It runs in
+            # a subshell, so it cannot stop the script, and the failure most
+            # worth catching (a write that did not happen) is the same failure
+            # that would stop it recording anything. The integrity check below
+            # the pipeline is what rules, and it reads the snapshot itself.
+            mkdir -p "$STAGED_ROOT/$(dirname "$rel")" 2>/dev/null || continue
+            git -C "$REPO_ROOT" show ":$rel" > "$STAGED_ROOT/$rel" 2>/dev/null \
+              && printf '%s\n' "$STAGED_ROOT/$rel"
           done
       ;;
     explicit)
@@ -105,7 +185,15 @@ build_filelist() {
 
 # record is defined before its first use below. It used to sit two hundred lines later,
 # so the wall check under it logged a command-not-found instead of a BLOCKER.
-record() { printf '%s:%s:%s:%s:%s\n' "$1" "$2" "$3" "$4" "$5" >> "$HITS"; }
+#
+# In staged mode the bytes under examination sit in a temporary snapshot nobody
+# can open after the run. The finding is about the repository path, so the
+# prefix is mapped back here, in the single place every finding passes through.
+record() {
+  local p="$1"
+  case "$p" in "$STAGED_ROOT"/*) p="$REPO_ROOT/${p#"$STAGED_ROOT"/}" ;; esac
+  printf '%s:%s:%s:%s:%s\n' "$p" "$2" "$3" "$4" "$5" >> "$HITS"
+}
 
 # The two local-only inputs hold real third-party names and project words BY
 # DESIGN, so their single wall is .gitignore. Nothing asserted that wall held
@@ -128,6 +216,59 @@ build_filelist \
             -e '/tools/pii_context\.txt$' -e '/tools/pii_names\.txt$' \
   | sort -u > "$FILELIST"
 
+# STAGED INTEGRITY. An unscanned file must never be counted as a clean one, so
+# the snapshot is verified POSITIVELY: every staged path is either a submodule,
+# which carries no blob, or must exist in the snapshot at exactly the byte
+# count the index records for it. Size equality is what catches a truncated
+# write, which is what a full disk produces and what a bare existence test
+# would wave through.
+#
+# The check deliberately depends on no marker file and no earlier write of its
+# own. A first attempt at this recorded failures into a file on the same
+# temporary filesystem, which is fail-open by construction: the disk that
+# stopped the blob from being written also stops the failure from being
+# recorded, leaving an empty marker, an empty file list, and the exit-0
+# "nothing to scan" path. This runs at the top level, reads only git and the
+# snapshot, and can stop the script itself.
+if [ "$MODE" = "staged" ]; then
+  staged_bad=""
+  staged_want=0
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    case "$rel" in /*|..|../*|*/../*|*/..) staged_bad="$staged_bad
+  $rel (path escapes the snapshot root)"; continue ;; esac
+    is_gitlink "$rel" && continue
+    is_own_config "$rel" && continue
+    staged_want=$((staged_want + 1))
+    want="$(git -C "$REPO_ROOT" cat-file -s ":$rel" 2>/dev/null)"
+    have="$(wc -c < "$STAGED_ROOT/$rel" 2>/dev/null | tr -d ' ')"
+    if [ -z "$want" ] || [ "$want" != "${have:-missing}" ]; then
+      staged_bad="$staged_bad
+  $rel (index says ${want:-unreadable} bytes, snapshot has ${have:-nothing})"
+    fi
+  done < <(git -C "$REPO_ROOT" -c core.quotePath=false \
+             diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+
+  if [ -n "$staged_bad" ]; then
+    echo "pii_scan: the staged snapshot is incomplete:$staged_bad" >&2
+    echo "pii_scan: a file that could not be read has not been scanned, so this" >&2
+    echo "run cannot report a pass. Free disk space or repair the index, then" >&2
+    echo "run it again." >&2
+    exit 2
+  fi
+
+  # The list itself can be lost after the snapshot succeeds, for the same
+  # reason, and an empty list is the one input this scanner answers with a
+  # cheerful exit 0. So the count is asserted rather than assumed.
+  staged_have="$(wc -l < "$FILELIST" | tr -d ' ')"
+  if [ "$staged_have" -lt "$staged_want" ]; then
+    echo "pii_scan: $staged_want staged file(s) were snapshotted but only" >&2
+    echo "$staged_have reached the scan list. Refusing to report on a list that" >&2
+    echo "lost its contents." >&2
+    exit 2
+  fi
+fi
+
 if grep -q ':' "$FILELIST"; then
   echo "pii_scan: a path contains a colon, which breaks the path:line output contract" >&2
   exit 2
@@ -140,6 +281,7 @@ if [ "$FILE_COUNT" -eq 0 ]; then
 fi
 
 : > "$TEXTLIST"; : > "$MEDIALIST"
+UNCLASSIFIED=0
 while IFS= read -r f; do
   # A zero-byte file is neither text nor media: no content, no embedded
   # metadata. Without this test an empty file fails the text probe and lands
@@ -147,8 +289,8 @@ while IFS= read -r f; do
   # on it. That exact chain fired in CI when the workflow's own (empty at
   # list-build time) output redirect landed inside the tree, and the scanner
   # reported its own log file as an unverifiable HIGH finding.
-  [ -s "$f" ] || continue
-  [ -f "$f" ] || continue
+  [ -s "$f" ] || { UNCLASSIFIED=$((UNCLASSIFIED + 1)); continue; }
+  [ -f "$f" ] || { UNCLASSIFIED=$((UNCLASSIFIED + 1)); continue; }
   case "$f" in
     *.png|*.jpg|*.jpeg|*.webp|*.gif|*.heic|*.tif|*.tiff|*.mp4|*.mov|*.m4v|*.webm\
     |*.wav|*.mp3|*.m4a|*.aac|*.flac|*.pdf)
@@ -160,6 +302,38 @@ while IFS= read -r f; do
     printf '%s\n' "$f" >> "$MEDIALIST"
   fi
 done < "$FILELIST"
+
+# CLASSIFICATION INTEGRITY. Every file on the list either reached the text list,
+# reached the media list, or was deliberately skipped. Those three numbers must
+# add up to the list, and if they do not then a write failed and a file passed
+# through the scanner without being examined by either pass. Nothing else in
+# this script would have noticed: the run would print a smaller media count and
+# a cheerful RESULT: PASS.
+#
+# This is the shape of the whole file. Scratch writes here are not individually
+# checked, and rewriting that error model is a bigger change than this one, so
+# the invariant is asserted at the point where a lost write becomes a lost
+# scan, which is the only place it actually matters.
+_n_text=$(wc -l < "$TEXTLIST" | tr -d ' ')
+_n_media=$(wc -l < "$MEDIALIST" | tr -d ' ')
+if [ "$((_n_text + _n_media + UNCLASSIFIED))" -ne "$FILE_COUNT" ]; then
+  echo "pii_scan: $FILE_COUNT file(s) to classify, but $_n_text reached the text" >&2
+  echo "list, $_n_media reached the media list and $UNCLASSIFIED were skipped." >&2
+  echo "A file that reached neither list was never scanned, so this run cannot" >&2
+  echo "report a pass. Check for a full disk on ${TMPDIR:-/tmp}." >&2
+  exit 2
+fi
+
+# And the scratch filesystem is probed once more before any finding is
+# recorded, because a disk that filled while the snapshot was being written
+# would silently drop every append to the findings file after it.
+if ! printf 'probe\n' > "$TMPDIR_RUN/write.probe" 2>/dev/null \
+   || [ ! -s "$TMPDIR_RUN/write.probe" ]; then
+  echo "pii_scan: ${TMPDIR:-/tmp} is no longer writable, so a finding recorded" >&2
+  echo "from here on would be lost. Refusing to report on a run that cannot" >&2
+  echo "keep its own notes." >&2
+  exit 2
+fi
 
 # ---------------------------------------------------------------------------
 # Rule table. Fields are TAB separated so a regex may contain a pipe.
@@ -274,7 +448,14 @@ fi
 if [ -r "$NAMES_FILE" ]; then
   while IFS= read -r n; do
     case "$n" in ''|'#'*) continue ;; esac
-    case "$n" in *[!A-Za-z\ ]*) continue ;; esac
+    # Letters, spaces, hyphen and apostrophe. A real roster holds O'Connor and
+    # Anne-Marie, and letters-and-spaces dropped both of them without a word,
+    # leaving an explicitly configured third party unguarded while the summary
+    # still said the class was armed. Neither character is special in an
+    # extended regex, so widening costs nothing. Everything else stays refused
+    # on purpose: these names are joined with a pipe and handed to grep, and
+    # that gate is what keeps a metacharacter out of the emitted pattern.
+    case "$n" in *[!A-Za-z\ \'-]*) continue ;; esac
     if [ -z "$ROSTER_PATTERN" ]; then ROSTER_PATTERN="$n"; else ROSTER_PATTERN="$ROSTER_PATTERN|$n"; fi
   done < "$NAMES_FILE"
 fi

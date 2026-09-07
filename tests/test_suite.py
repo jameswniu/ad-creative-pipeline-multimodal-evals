@@ -13,6 +13,7 @@ import ast
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -572,6 +573,401 @@ def test_loop_graph_ownership_matches_the_map():
     # the invisible twin of the eye exists only to keep the spine straight, it must stay unclassed and unlabeled as a step
     assert re.search(r"^\s+class GH ghost\s*$", graph, re.M), "ghost class"
     assert "GH" not in steps
+
+
+def _seed_staged_repo(tmp, staged_text, worktree_text, extra=None):
+    """A git repo whose index and working tree deliberately disagree.
+
+    The scanner resolves its own repo root from its own location, so the copy
+    under test has to live inside the throwaway repo. That is the same shape
+    the commit-message hook test uses.
+    """
+    tools = os.path.join(tmp, "tools")
+    os.makedirs(os.path.join(tmp, "docs"))
+    os.makedirs(tools)
+    shutil.copy2(os.path.join(ROOT, "tools", "pii_scan.sh"),
+                 os.path.join(tools, "pii_scan.sh"))
+
+    def git(*args):
+        return subprocess.run(["git", "-C", tmp] + list(args),
+                              capture_output=True, text=True, check=True)
+
+    subprocess.run(["git", "init", "-q", tmp], check=True, capture_output=True)
+    # git does not validate this field, and an address-shaped literal here is
+    # a BLOCKER under the scanner's own class 3 rule. Writing one and then
+    # suppressing it would be a test file teaching the reader to wave the
+    # finding through, so there is simply no address to suppress.
+    git("config", "user.name", "zzqa")
+    git("config", "user.email", "zzqa")
+    git("commit", "-q", "--allow-empty", "-m", "seed")
+
+    target = os.path.join(tmp, "docs", "note.txt")
+    with open(target, "w") as fh:
+        fh.write(staged_text)
+    git("add", "docs/note.txt")
+    # The commit is never made. What is staged is what a commit WOULD carry,
+    # and the working tree is then moved away from it, which is the whole point.
+    with open(target, "w") as fh:
+        fh.write(worktree_text)
+
+    for rel, blob in (extra or {}).items():
+        path = os.path.join(tmp, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as fh:
+            fh.write(blob)
+        git("add", rel)
+    return os.path.join(tools, "pii_scan.sh")
+
+
+def _run_staged_scan(script, tmp):
+    # The roster library and both local-only inputs are pointed at paths that
+    # do not exist, so this test measures the built-in rule table and nothing
+    # about the machine it runs on.
+    env = dict(os.environ,
+               PII_PATTERNS_LIB=os.path.join(tmp, "no-roster.sh"),
+               PII_CONTEXT_FILE=os.path.join(tmp, "no-context.txt"),
+               PII_NAMES_FILE=os.path.join(tmp, "no-names.txt"))
+    return subprocess.run(["bash", script, "--staged"], cwd=tmp, env=env,
+                          capture_output=True, text=True, timeout=90)
+
+
+def test_staged_scan_reads_the_index_not_the_working_tree():
+    """A secret staged and then cleaned from the file still has to be blocked.
+
+    --staged took its file names from the index and then read its bytes from
+    disk, which are two different things the moment they disagree. Stage a key,
+    edit the key out of the file, commit: the gate scanned the cleaned-up tree,
+    passed, and the commit carried the key anyway. Nothing exotic is needed to
+    reach it. Staging a fix and then continuing to edit is ordinary work, and
+    so is `git add -p`, which stages half a file by design.
+
+    Three properties, because each one fails differently:
+      1. the staged secret blocks even though the tree is clean
+      2. the finding names the repository path, not the temporary snapshot the
+         bytes were read from, or the output is unusable in a ticket
+      3. a secret that is ONLY in the working tree does NOT block, which is
+         what proves the index is being read rather than both
+    """
+    key = "AKIA" + "QQQQZZZZWWWW1111"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        script = _seed_staged_repo(tmp,
+                                   staged_text=f"aws_key = {key}\n",
+                                   worktree_text="aws_key = redacted\n")
+        r = _run_staged_scan(script, tmp)
+        out = r.stdout + r.stderr
+        assert r.returncode == 1, (
+            "a key that is staged but no longer in the file must still block: "
+            f"the commit carries the staged blob, not the tree\nexit={r.returncode}\n{out}")
+        assert "cloud-access-key-id" in out, (
+            "the staged blob was not scanned at all\n" + out)
+        assert "docs/note.txt" in out, (
+            "the finding must name the repository path\n" + out)
+        assert "/staged/" not in out and "pii_scan." not in out.split("===")[-1], (
+            "a temporary snapshot path leaked into the report\n" + out)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        script = _seed_staged_repo(tmp,
+                                   staged_text="aws_key = redacted\n",
+                                   worktree_text=f"aws_key = {key}\n")
+        r = _run_staged_scan(script, tmp)
+        out = r.stdout + r.stderr
+        assert r.returncode == 0, (
+            "a secret that exists only in the working tree is not being "
+            "committed, so --staged must pass. Failing here means the tree is "
+            f"still being read.\nexit={r.returncode}\n{out}")
+
+
+def test_staged_scan_materializes_media_blobs_too():
+    """Class 7 reads bytes, so media has to come from the index as well.
+
+    Half a fix is the dangerous kind. If only the text list were rebuilt from
+    the index, a staged image would be looked for on disk, not found, and drop
+    out of the scan in silence: the file count would say it was examined and
+    the media count would say nothing was there. So this stages an image and
+    then deletes it from the working tree, and asserts the scanner still has
+    one media file to look at.
+    """
+    png = (b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\rIHDR"
+           + b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+           + b"\x1f\x15\xc4\x89" + b"\x00" * 64)
+    with tempfile.TemporaryDirectory() as tmp:
+        script = _seed_staged_repo(tmp,
+                                   staged_text="nothing to see\n",
+                                   worktree_text="nothing to see\n",
+                                   extra={"docs/frame.png": png})
+        os.remove(os.path.join(tmp, "docs", "frame.png"))
+        r = _run_staged_scan(script, tmp)
+        out = r.stdout + r.stderr
+        header = [ln for ln in out.splitlines() if ln.startswith("mode=staged")]
+        assert header, "the scanner printed no mode line\n" + out
+        assert "media=1" in header[0], (
+            "a staged image that is no longer on disk must still be read from "
+            f"the index, or class 7 quietly examines nothing\n{header}\n{out}")
+
+
+def test_staged_scan_does_not_skip_names_that_merely_start_with_dots():
+    """A leading pair of dots is a filename, not a parent directory.
+
+    Materializing the index needs a guard against a path escaping the snapshot
+    root, and the first guard was the glob `..*`, which matches `..env` and
+    `..secrets/token` as readily as `../etc`. Those are ordinary legal
+    filenames, and a credential in one of them dropped out of the scan without
+    a word. A guard that silently excludes real files is worse than no guard,
+    because the report still says PASS.
+    """
+    key = "AKIA" + "QQQQZZZZWWWW1111"
+    with tempfile.TemporaryDirectory() as tmp:
+        script = _seed_staged_repo(
+            tmp, staged_text="clean\n", worktree_text="clean\n",
+            extra={"..env": f"aws_key = {key}\n".encode(),
+                   "..secrets/token.txt": f"aws_key = {key}\n".encode()})
+        r = _run_staged_scan(script, tmp)
+        out = r.stdout + r.stderr
+        assert r.returncode == 1, (
+            "a key in a file whose name begins with dots must block like any "
+            f"other\nexit={r.returncode}\n{out}")
+        for name in ("..env", "..secrets/token.txt"):
+            assert name in out, (
+                f"{name} was excluded from the scan by the traversal guard\n" + out)
+
+
+def test_staged_scan_fails_closed_when_a_blob_cannot_be_read():
+    """A file that could not be read has not been scanned, and must not pass.
+
+    Materializing the index introduced a way to lose a file quietly: a full
+    disk or a damaged object makes the write fail, the path drops out of the
+    list, and the scan happily reports PASS on the smaller set. Nothing
+    downstream can tell that the set shrank. So an unreadable staged blob is
+    exit 2, the scanner-could-not-run code, which the pre-commit hook already
+    treats as a hard stop.
+
+    The damage is real rather than simulated: the blob is staged and then its
+    object is removed from the object store, so git genuinely cannot produce
+    the bytes the index points at.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        script = _seed_staged_repo(tmp,
+                                   staged_text="a line of nothing\n",
+                                   worktree_text="a line of nothing\n")
+        sha = subprocess.run(["git", "-C", tmp, "rev-parse", ":docs/note.txt"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+        obj = os.path.join(tmp, ".git", "objects", sha[:2], sha[2:])
+        assert os.path.exists(obj), "expected a loose object in a fresh repo"
+        os.remove(obj)
+
+        r = _run_staged_scan(script, tmp)
+        out = r.stdout + r.stderr
+        assert r.returncode == 2, (
+            "an unreadable staged blob must fail the run rather than shrink "
+            f"the set being scanned\nexit={r.returncode}\n{out}")
+        assert "RESULT: PASS" not in out, (
+            "the scan reported a pass on a set it could not fully read\n" + out)
+        assert "docs/note.txt" in out, (
+            "the run must name the file it could not read\n" + out)
+
+
+def test_ci_fails_rather_than_passes_when_the_scanner_secret_is_missing():
+    """A green tick that means three of the seven classes never ran.
+
+    The workflow printed "ABSENT ... will be SKIPPED" and exited 0, so a
+    repository with no secrets configured showed a passing PII gate forever.
+    A skipped check is not a passing check, and that sentence is printed by the
+    scanner itself; CI was the one surface that did not act on it.
+
+    All four branches are asserted, because three of them are the ways this
+    could be fixed wrongly. Failing on a fork would hand a contributor a red
+    check they have no way to clear, since a fork cannot read secrets at all.
+    Failing on every working-branch push is how a gate gets routed around.
+    Passing when the context is unknown is the original defect wearing a hat.
+    """
+    script = os.path.join(ROOT, "tools", "ci_require_pii_secrets.sh")
+    assert os.path.exists(script), "the decision script is missing"
+
+    def run_gate(**over):
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("PII_CONTEXT", "PII_NAMES", "GITHUB_STEP_SUMMARY")}
+        env.update({"IS_FORK": "false", "TARGET_BRANCH": "main",
+                    "PUBLICATION_BRANCH": "main"})
+        env.update(over)
+        r = subprocess.run(["bash", script], cwd=ROOT, env=env,
+                           capture_output=True, text=True, timeout=30)
+        return r.returncode, r.stdout + r.stderr
+
+    rc, out = run_gate()
+    assert rc != 0, ("a missing secret on the publication branch must fail the "
+                     "job, not warn and go green\n" + out)
+    assert "FAIL" in out, "the failure must say what it is: " + out
+
+    rc, out = run_gate(PII_CONTEXT="x")
+    assert rc != 0, ("one secret present is not both; class 4 names still did "
+                     "not run\n" + out)
+    assert "PII_NAMES" in out, "the failure must name the missing secret: " + out
+
+    # A real rule, in the shape apply_rule_table actually reads: four fields
+    # separated by tabs. Anything looser is not a fixture, it is the bug.
+    rule = "HIGH\tCLASS5-WORKPLACE\tproject-word\t\\bzebra\\b\n"
+    rc, out = run_gate(PII_CONTEXT=rule, PII_NAMES="Jane Doe")
+    assert rc == 0, "both secrets present and usable must pass: " + out
+    assert "ARMED" in out, out
+
+    # Present is not armed, in three different ways, each of which reported
+    # armed at some point while the scanner activated nothing:
+    #   comments only, the template pasted straight in
+    #   a bare word, which is not a rule and loads as zero rules
+    #   tabs flattened to spaces, which is what a paste through a web form does
+    for label, ctx, names in (
+        ("comments only", "# one rule per line\n", "# one First Last per line\n"),
+        ("a bare fragment", "workplaceword\n", "Jane Doe"),
+        ("tabs flattened to spaces",
+         "HIGH CLASS5-WORKPLACE project-word \\bzebra\\b\n", "Jane Doe"),
+        # Consecutive tabs collapse under the scanner's own IFS read, so the
+        # regex field lands empty and the rule is skipped. An awk pass with a
+        # tab field separator does not collapse them and called this armed.
+        ("an empty middle field", "HIGH\tCLASS5-WORKPLACE\t\t\\bzebra\\b\n", "Jane Doe"),
+        # The scanner discards grep's complaint about a bad pattern, so a rule
+        # that can never fire looks exactly like one that never matched.
+        ("a pattern the engine rejects",
+         "HIGH\tCLASS5-WORKPLACE\tproject-word\t[unclosed\n", "Jane Doe"),
+        ("a roster of nothing but spaces", rule, "   \n"),
+        # The report loops over the four severities and counts them with a
+        # literal grep, so a rule written `High` records a hit nothing ever
+        # counts, displays, or fails on. An invisible finding is worse than no
+        # rule: the operator believes the term is guarded.
+        ("a severity in the wrong case",
+         "High\tCLASS5-WORKPLACE\tproject-word\t\\bzebra\\b\n", "Jane Doe"),
+        # Class and label ride in the colon-delimited output line. The scanner
+        # already refuses a path carrying a colon for this reason.
+        ("a colon in the label",
+         "HIGH\tCLASS5-WORKPLACE\tproject:word\t\\bzebra\\b\n", "Jane Doe"),
+        # grep takes these without complaint and each one strips the path and
+        # line prefix run_rule reads the finding out of, so the rule matches
+        # and reports nothing. Exit status alone called them valid.
+        ("a flag that suppresses the output the report is parsed from",
+         "HIGH\tCLASS5-WORKPLACE\tproject-word\t\\bzebra\\b\t-q\n", "Jane Doe"),
+        # One good rule does not excuse a bad one. A malformed row used to be
+        # skipped without being counted, so this pair reported ARMED while half
+        # of it did nothing.
+        ("one good rule beside one pasted with spaces",
+         rule + "HIGH CLASS5-WORKPLACE other-word \\bquagga\\b\n", "Jane Doe"),
+        # A roster is not armed because ONE name in it survived. An entry the
+        # scanner throws away is a third party the operator believes is
+        # guarded and is not, which is worse than never listing them.
+        ("a roster entry carrying a digit", rule, "Jane Doe\nAgent 007\n"),
+        # The killer. A tab-separated read COLLAPSES a run of tabs, so an empty
+        # label shifts every field left: label becomes the regex, regex becomes
+        # the flags. Severity, class, label and pattern all look valid, the
+        # verdict is ARMED, and the scanner hunts for the string `-i` while the
+        # term it was configured to guard walks out. Validating with the same
+        # collapsing read the scanner uses cannot see this; only a parser that
+        # preserves empty columns can.
+        ("an empty label that shifts every field left",
+         "HIGH\tCLASS5-WORKPLACE\t\t\\bzebra\\b\t-i\n", "Jane Doe"),
+        ("a sixth column", rule.rstrip("\n") + "\t-i\textra\n", "Jane Doe"),
+    ):
+        rc, out = run_gate(PII_CONTEXT=ctx, PII_NAMES=names)
+        assert rc != 0, (
+            f"{label} arms nothing, so it must not report armed\n" + out)
+        assert "NOTE:" in out, (
+            "the operator has to be told the secret is set but useless, which "
+            f"is a different repair from not set at all ({label})\n" + out)
+
+    rc, out = run_gate(IS_FORK="true")
+    assert rc == 0, ("a fork pull request cannot read secrets, so failing it "
+                     "hands a contributor a check they cannot clear\n" + out)
+    assert "SKIPPED" in out and "not as a pass" in out, (
+        "the fork path must report a skip out loud, or it is the same false "
+        "green in a different coat\n" + out)
+
+    # A real roster holds O'Connor and Anne-Marie. Letters and spaces alone
+    # dropped both without a word, so the scanner accepts hyphens and
+    # apostrophes now and these must arm rather than be silently discarded.
+    rc, out = run_gate(PII_CONTEXT=rule,
+                       PII_NAMES="Sean O'Connor\nAnne-Marie Doe\n")
+    assert rc == 0 and "ARMED" in out, (
+        "a hyphen and an apostrophe belong in ordinary names, and refusing "
+        "them leaves the person they identify unguarded\n" + out)
+    scanner = os.path.join(ROOT, "tools", "pii_scan.sh")
+    with open(scanner) as fh:
+        assert "*[!A-Za-z\\ \\'-]*" in fh.read(), (
+            "the scanner still refuses hyphens and apostrophes, so the gate "
+            "would arm a roster the scanner then throws half of away")
+
+    # CRLF is what a secret pasted from a Windows editor or a web form looks
+    # like, and the stray carriage return lands in the last field on the line.
+    # In the flags field grep rejects it outright, in the regex it can never
+    # match, and either way the rule is dead while the scanner says nothing.
+    # It is normalized away rather than rejected, in the gate and in the
+    # workflow that writes the file, so both are reading the same bytes.
+    crlf = "HIGH\tCLASS5-WORKPLACE\tproject-word\t\\bzebra\\b\t-i\r\n"
+    rc, out = run_gate(PII_CONTEXT=crlf, PII_NAMES="Jane Doe\r\n")
+    assert rc == 0 and "ARMED" in out, (
+        "a CRLF secret carries usable rules once the carriage returns are "
+        "stripped, and stripping them is the fix\n" + out)
+    with open(os.path.join(ROOT, ".github", "workflows", "pii-scan.yml")) as fh:
+        wf_text = fh.read()
+    assert wf_text.count("| tr -d '\\r' > tools/pii_") == 2, (
+        "the workflow writes the secret to disk without stripping carriage "
+        "returns, so the scanner reads bytes this gate never validated")
+
+    # The validator has to run the invocation the scanner runs, flags and all.
+    # Validating the regex alone left the optional fifth field unexamined, so a
+    # rule with unusable flags read as valid here and died silently there.
+    with open(script) as fh:
+        gate_text = fh.read()
+    assert 'grep -a -E $flags -e "$re"' in gate_text, (
+        "the gate validates a tidier grep call than run_rule actually makes, "
+        "which is how an unusable flags field passes validation")
+
+    rc, out = run_gate(TARGET_BRANCH="a-working-branch")
+    assert rc == 0, ("a working branch is not the publication moment; a red "
+                     "check on every push is how a gate gets bypassed\n" + out)
+    assert "WARNING" in out, out
+
+    rc, out = run_gate(TARGET_BRANCH="", PUBLICATION_BRANCH="")
+    assert rc != 0, ("an unknown branch context must fail closed. An unknown "
+                     "state is not a safe state.\n" + out)
+
+
+def test_ci_secret_gate_is_actually_wired_into_the_workflow():
+    """The script can be perfect and still never run.
+
+    A gate with a test but no caller passes its test and guards nothing, which
+    is the failure mode this repository has hit more than once. So the workflow
+    is read: it must invoke the script, and it must carry the fork condition
+    that turns a fork pull request into a skipped check rather than a green one.
+    """
+    wf = os.path.join(ROOT, ".github", "workflows", "pii-scan.yml")
+    with open(wf) as fh:
+        text = fh.read()
+    assert "tools/ci_require_pii_secrets.sh" in text, (
+        "the workflow does not call the secret gate, so the gate does not run")
+    assert "PUBLICATION_BRANCH: ${{ github.event.repository.default_branch }}" in text, (
+        "the publication branch is not passed, so the gate cannot tell the "
+        "publication moment from an ordinary push")
+    # The old wording promised a warning. It described a green check.
+    assert "turns that into a visible warning rather than a silent pass" not in text, (
+        "the header still describes the behaviour that was the defect")
+
+    # The enforcement has to be its own JOB. A skipped STEP is a line in a log
+    # nobody expands; a skipped JOB is a named check reporting SKIPPED in the
+    # checks list, which is the only form of "did not run" a human scanning a
+    # pull request and a branch rule can both see.
+    try:
+        import yaml
+    except ImportError:
+        return
+    doc = yaml.safe_load(text)
+    assert "armed-context" in doc["jobs"], (
+        "the armed check is not a job, so on a fork it is a buried skipped "
+        "step inside a green job rather than a check that says it did not run")
+    job = doc["jobs"]["armed-context"]
+    assert "head.repo.full_name == github.repository" in job.get("if", ""), (
+        "the fork condition is gone from the job, so a fork pull request would "
+        "run a credentialed check it cannot possibly satisfy")
+    runs = " ".join(s.get("run", "") for s in job["steps"])
+    assert "ci_require_pii_secrets.sh" in runs, (
+        "the armed-context job does not call the gate, so it guards nothing")
 
 
 if __name__ == "__main__":

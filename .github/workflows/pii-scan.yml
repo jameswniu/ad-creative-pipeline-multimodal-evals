@@ -36,8 +36,10 @@ jobs:
       # gitignored on purpose: a scanner that hardcodes an employer name or a
       # colleague's name leaks exactly what it exists to prevent. So CI
       # materializes them from secrets when they exist. When they do not, the
-      # affected checks are SKIPPED, the scan says so, and the step below
-      # turns that into a visible warning rather than a silent pass.
+      # affected checks are SKIPPED, and the step two below decides what that
+      # means: a hard failure on the publication branch, an explicit skipped
+      # status on a fork pull request that cannot read secrets at all, a
+      # warning on a working branch. It used to mean a green check every time.
       # Class 7 (media metadata) needs a real metadata reader. Without one the
       # scanner fails CLOSED on every media file, which is correct behaviour
       # and a red CI, so the reader is installed rather than the check skipped.
@@ -51,18 +53,35 @@ jobs:
           PII_CONTEXT: ${{ secrets.PII_CONTEXT }}
           PII_NAMES: ${{ secrets.PII_NAMES }}
         run: |
+          # Carriage returns are stripped. A secret pasted from a Windows editor
+          # or a web form carries CRLF, and the stray CR lands in whichever
+          # field ends the line: the grep flags, where grep rejects it, or the
+          # regex, where it can never match. Either way the rule is dead and
+          # the scanner says nothing, because it discards grep's complaint.
           if [ -n "${PII_CONTEXT:-}" ]; then
-            printf '%s\n' "$PII_CONTEXT" > tools/pii_context.txt
+            printf '%s\n' "$PII_CONTEXT" | tr -d '\r' > tools/pii_context.txt
             echo "context: provided"
           else
             echo "context: ABSENT, class 5 and 6 project words will be SKIPPED"
           fi
           if [ -n "${PII_NAMES:-}" ]; then
-            printf '%s\n' "$PII_NAMES" > tools/pii_names.txt
+            printf '%s\n' "$PII_NAMES" | tr -d '\r' > tools/pii_names.txt
             echo "names: provided"
           else
             echo "names: ABSENT, class 4 third-party names will be SKIPPED"
           fi
+
+      # The skip is stated out loud rather than left as an absence, and it is
+      # said by the same script that says the failure, so the two cannot drift
+      # apart. This step costs no secret, which is why it can run on a fork at
+      # all; the enforcement itself is the separate armed-context job below.
+      - name: Report the fork skip
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        env:
+          IS_FORK: 'true'
+          TARGET_BRANCH: ${{ github.base_ref }}
+          PUBLICATION_BRANCH: ${{ github.event.repository.default_branch }}
+        run: bash tools/ci_require_pii_secrets.sh
 
       # The status is captured explicitly rather than taken from a pipeline.
       # Two bugs have lived in this one step, in opposite directions, and both
@@ -110,3 +129,42 @@ jobs:
             echo ""
             echo "_The judgement layer does not run in CI. See this file's header._"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # A SEPARATE JOB, on purpose. This is the check that answers "did the scan
+  # above actually have its class 4, 5 and 6 inputs", and until it existed the
+  # answer was always yes-shaped: the job printed "ABSENT ... will be SKIPPED"
+  # and exited 0, so a repository with no secrets configured showed a green PII
+  # gate forever. That is the scanner's own founding defect one layer up, a
+  # thing announcing failure while reporting success.
+  #
+  # It is a job rather than a step because a step that does not run is buried
+  # in a log, while a job that does not run is a named check reporting SKIPPED
+  # in the checks list, which is a state a human and a branch rule can both
+  # see. On a pull request from a fork, which cannot read repository secrets at
+  # all, that is exactly the honest answer: not passed, not failed, not run.
+  #
+  # The residual, stated plainly rather than papered over: GitHub counts a
+  # skipped required check as satisfied, so this cannot by itself stop a fork
+  # pull request from being merged unscanned. Closing that would mean running
+  # a credentialed job against untrusted head content, which this workflow
+  # refuses by design (see the header). The armed scan of a fork contribution
+  # is a maintainer action, and this check is what makes its absence visible.
+  #
+  # The decision lives in a script rather than in this YAML because YAML cannot
+  # be tested, and tests/test_suite.py runs that script in every direction.
+  armed-context:
+    name: armed context
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Require an armed scanner on the publication path
+        env:
+          PII_CONTEXT: ${{ secrets.PII_CONTEXT }}
+          PII_NAMES: ${{ secrets.PII_NAMES }}
+          IS_FORK: 'false'
+          TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+          PUBLICATION_BRANCH: ${{ github.event.repository.default_branch }}
+        run: bash tools/ci_require_pii_secrets.sh
