@@ -227,15 +227,36 @@ esac
 # which reads embedded metadata with a real metadata reader.
 TEXTLIST="$TMPDIR_RUN/text.lst"
 : > "$TEXTLIST"
+NOT_TEXT=0
 while IFS= read -r f; do
-  [ -f "$f" ] || continue
+  [ -f "$f" ] || { NOT_TEXT=$((NOT_TEXT + 1)); continue; }
   case "$f" in
-    *.png|*.jpg|*.jpeg|*.webp|*.gif|*.mp4|*.mov|*.webm|*.wav|*.mp3|*.pdf) continue ;;
+    *.png|*.jpg|*.jpeg|*.webp|*.gif|*.mp4|*.mov|*.webm|*.wav|*.mp3|*.pdf)
+      NOT_TEXT=$((NOT_TEXT + 1)); continue ;;
   esac
-  grep -Iq . "$f" 2>/dev/null && printf '%s\n' "$f" >> "$TEXTLIST"
+  if grep -Iq . "$f" 2>/dev/null; then
+    printf '%s\n' "$f" >> "$TEXTLIST"
+  else
+    NOT_TEXT=$((NOT_TEXT + 1))
+  fi
 done < "$FILELIST"
 
+# THE COUNT IS ANCHORED TO THE INPUT, not to the list just written. The chunk
+# integrity check further down compares chunks against N_FILES, and taking
+# N_FILES from the text list would have made that check compare a truncated
+# list against itself: a scratch write that failed mid-loop would shorten the
+# list, shorten the expected count by exactly as much, and agree. A check whose
+# expected value is derived from the thing it is checking is not a check.
+_n_in=$(wc -l < "$FILELIST" | tr -d ' ')
 N_FILES=$(wc -l < "$TEXTLIST" | tr -d ' ')
+if [ "$((N_FILES + NOT_TEXT))" -ne "$_n_in" ]; then
+  echo "pii_llm_review: $_n_in file(s) to sort, but $N_FILES became text and" >&2
+  echo "$NOT_TEXT were binary or unreadable. A file that landed nowhere was" >&2
+  echo "never offered to the reviewer." >&2
+  echo "RESULT: FAIL CLOSED. Check for a full disk on ${TMPDIR:-/tmp}." >&2
+  exit 2
+fi
+
 if [ "$N_FILES" -eq 0 ]; then
   echo "=== pii_llm_review ==="
   echo "nothing to review (mode=$MODE)"

@@ -189,10 +189,21 @@ build_filelist() {
 # In staged mode the bytes under examination sit in a temporary snapshot nobody
 # can open after the run. The finding is about the repository path, so the
 # prefix is mapped back here, in the single place every finding passes through.
+#
+# The append is checked. A probe taken earlier says the filesystem was writable
+# THEN, which is not the same as saying this write landed, and a finding that
+# could not be written is a finding that will not be reported: the totals would
+# come out zero and the run would print PASS. This is the one write in the file
+# where losing bytes silently converts a failure into a success.
 record() {
   local p="$1"
   case "$p" in "$STAGED_ROOT"/*) p="$REPO_ROOT/${p#"$STAGED_ROOT"/}" ;; esac
-  printf '%s:%s:%s:%s:%s\n' "$p" "$2" "$3" "$4" "$5" >> "$HITS"
+  if ! printf '%s:%s:%s:%s:%s\n' "$p" "$2" "$3" "$4" "$5" >> "$HITS"; then
+    echo "pii_scan: a finding could not be written to the findings file." >&2
+    echo "A finding that cannot be recorded cannot be reported, so this run" >&2
+    echo "cannot pass. Check for a full disk on ${TMPDIR:-/tmp}." >&2
+    exit 2
+  fi
 }
 
 # The two local-only inputs hold real third-party names and project words BY

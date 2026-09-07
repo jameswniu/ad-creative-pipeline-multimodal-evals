@@ -970,5 +970,139 @@ def test_ci_secret_gate_is_actually_wired_into_the_workflow():
         "the armed-context job does not call the gate, so it guards nothing")
 
 
+def test_ship_gate_finds_the_replay_probe_and_fails_closed_without_it():
+    """The replay check has to be found, and has to fail closed when it cannot decide.
+
+    The sibling repository resolved this probe against the gate's own
+    directory, guards/, while the probe has always lived in probes/, so the
+    path never existed and the `[ -f "$MP" ]` guard read that as "no probe
+    here, carry on". The replay check was skipped in silence on every run and a
+    replaying clip passed. This repository had the path right and no test, which
+    is the same distance from safe.
+
+    Three properties. The probe is resolved where it actually lives, a missing
+    probe fails closed with exit 64 like unreadable input, and a probe that RAN
+    without reaching a verdict fails closed too.
+    """
+    gate = os.path.join(ROOT, "guards", "ship_gate.sh")
+    with open(gate) as fh:
+        text = fh.read()
+
+    assert 'MP="$SKILL/mirror_probe.py"' in text, (
+        "the gate is not looking in the probes directory, so the replay check "
+        "resolves to a path that does not exist and is skipped in silence")
+    assert os.path.exists(os.path.join(PROBES, "mirror_probe.py")), (
+        "the probe the gate resolves to is not there")
+    assert 'if [ -f "$MP" ] && [ -z "$ARROWOK" ]' not in text, (
+        "a missing probe is being treated as a reason to skip the check, which "
+        "is how it disappeared for months")
+    # Every other failing path in this gate drops the receipt first. A HOLD that
+    # leaves yesterday's approval standing is not a hold: the clip still looks
+    # signed off while nothing has been checked.
+    missing_branch = text[text.index("mirror_probe.py not found"):]
+    assert 'rm -f "$MARK"' in missing_branch[:missing_branch.index("exit 64")], (
+        "the missing-probe HOLD leaves an existing receipt in place")
+    # All three exits below the probe drop the receipt: probe missing, probe
+    # inconclusive, and replay detected. The last is the one that matters most
+    # and the one that was unreachable until the probe path was fixed, so it is
+    # the one nobody had ever exercised.
+    replay_branch = text[text.index("the scene replays itself"):]
+    assert 'rm -f "$MARK"' in replay_branch[:replay_branch.index("exit 3")], (
+        "a clip the probe just REJECTED keeps its approval receipt")
+
+    # The four outcomes are EXECUTED, not read. Driving the whole gate cannot
+    # reach this section without real video: the geometry check reads the file
+    # with ffprobe and exits 64 first, so a test that feeds it a text file named
+    # clip.mp4 and asserts "nonzero" is only proving the gate rejects a text
+    # file. That was the previous version of this test, and deleting the branch
+    # under test would have left it green.
+    #
+    # So the section is lifted out by its own anchors and run with the probe
+    # stubbed to each exit code it can return. If the anchors ever move, the
+    # extraction raises and this test fails loudly, which is the correct signal.
+    block = text[text.index('MP="$SKILL/mirror_probe.py"'):]
+    block = block[:block.index('if [ -n "$DIRECTIONAL" ]')]
+
+    def run_replay(probe_exit, replayok="", says="MIRROR ok: stub verdict"):
+        """probe_exit None means no probe file at all.
+
+        `says` is what the probe prints. The default carries the MIRROR verdict
+        line a real probe always prints; passing something else stands in for a
+        probe that crashed, which python reports with the same exit 1 the probe
+        uses for a detected replay.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = os.path.join(tmp, "probes")
+            os.makedirs(skill)
+            if probe_exit is not None:
+                with open(os.path.join(skill, "mirror_probe.py"), "w") as fh:
+                    fh.write(f"import sys\nprint({says!r})\nsys.exit({probe_exit})\n")
+            mark = os.path.join(tmp, "receipt")
+            with open(mark, "w") as fh:
+                fh.write("a receipt from a previous pass\n")
+            prelude = ('set -uo pipefail\n'
+                       'SKILL="$T_SKILL"\nMARK="$T_MARK"\nF="$T_MARK"\n'
+                       'ARROWOK=""\nREPLAYOK="$T_REPLAYOK"\n')
+            r = subprocess.run(
+                ["bash", "-c", prelude + block + "\nexit 0\n"],
+                env=dict(os.environ, T_SKILL=skill, T_MARK=mark,
+                         T_REPLAYOK=replayok),
+                capture_output=True, text=True, timeout=60)
+            return r.returncode, r.stdout + r.stderr, os.path.exists(mark)
+
+    rc, out, receipt = run_replay(None)
+    assert rc == 64, f"a missing probe must fail closed with 64, got {rc}\n{out}"
+    assert "mirror_probe.py not found" in out, out
+    assert not receipt, "the missing-probe HOLD left an existing receipt standing"
+
+    for code in (3, 64):
+        rc, out, receipt = run_replay(code)
+        assert rc == 64, (
+            f"a probe that ran and returned {code} reached no verdict, which must "
+            f"fail closed like a missing probe; got {rc}\n{out}")
+        assert "no verdict" in out, out
+        assert not receipt, (
+            f"an inconclusive probe (exit {code}) left an existing receipt standing")
+
+    rc, out, receipt = run_replay(1)
+    assert rc == 3, f"a detected replay must hold with 3, got {rc}\n{out}"
+    assert "replays itself" in out, out
+    assert not receipt, (
+        "the clip the probe just REJECTED kept its approval receipt, which is "
+        "the worst case of all: it still looks signed off")
+
+    rc, out, receipt = run_replay(1, replayok="the scene is time symmetric")
+    assert rc == 0, f"a declared REPLAYOK override must pass, got {rc}\n{out}"
+    assert "REPLAY OVERRIDE" in out, out
+    assert receipt, "an override is a pass, so the receipt must survive"
+
+    rc, out, receipt = run_replay(0)
+    assert rc == 0, f"a clean probe must pass, got {rc}\n{out}"
+    assert receipt, "a clean probe must not remove the receipt"
+
+    # A crashed probe exits 1, and so does a detected replay. Only the verdict
+    # line tells them apart, and with REPLAYOK set the crash used to walk into
+    # the override branch and ship the clip with a receipt and no replay check
+    # behind it. Both the bare crash and the crash under an override must hold.
+    for label, ok in (("a bare crash", ""), ("a crash under an override", "declared symmetric")):
+        rc, out, receipt = run_replay(1, replayok=ok, says="Traceback: ImportError")
+        assert rc == 64, (
+            f"{label} exits 1 exactly like a real replay verdict, so without the "
+            f"verdict line it must fail closed; got {rc}\n{out}")
+        assert "no verdict line" in out, out
+        assert not receipt, f"{label} left an approval receipt standing"
+
+    # A probe that RAN and reached no verdict is the same silent skip wearing
+    # different clothes, and it only became reachable here once the probe
+    # started running at all. The probe answers 64 for footage it cannot read
+    # and 3 for too little visual signal; both used to fall through to the
+    # directional check and, with no directional argument, on to a PASS.
+    assert 'case "$MPRC" in' in text, (
+        "only the replay verdict is handled, so an inconclusive or failed probe "
+        "falls through and the clip ships unexamined")
+    for code in ("0|1)", "exit 64 ;;"):
+        assert code in text, f"the probe status handling is missing {code}"
+
+
 if __name__ == "__main__":
     sys.exit(_main())
