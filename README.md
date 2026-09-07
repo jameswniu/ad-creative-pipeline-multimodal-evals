@@ -4,7 +4,7 @@
 
 <div align="center">
 
-<b><font size="6">Ad Creative Pipeline, Multimodal Evals</font></b>
+<b><font size="6">Autonomous Ads Pipeline, Multimodal Evals</font></b>
 
 <br/>
 
@@ -19,7 +19,7 @@
 <br/><br/>
 
 <strong>The product is the evals, and they double as a router across four video engines, the way Perplexity routes a question to a model, here for video.</strong><br/>
-A multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
+An autonomous multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
 This repository is the public release of that pipeline: the checks, the ledgers, the winners table that routes, and every script that ran.
 
 <br/>
@@ -38,11 +38,11 @@ This repository is the public release of that pipeline: the checks, the ledgers,
 | **Outcome evals** | Is what shipped true, to the brief and to the facts it leans on? | The research pass behind the brief | Every time the brief changes |
 | **Quality evals** | Does it meet the bar for the audience it was made for? | A golden set of hand-labelled exemplars, plus the market's own bar | Every time the audience changes |
 
-Three words carry the page. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. Making the video was the easy half. The hard half is deciding, with nobody in the room, whether it is good enough to pay for. The three tiers split that decision into pieces small enough to build.
+Three words carry the page. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. Making the video was the easy half. The hard half is autonomy, deciding with nobody in the room whether it is good enough to pay for. The three tiers split that decision into pieces small enough to build.
 
 - The first tier is the skeleton and it stays put.
 - The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the quality evals are re-derived from a fresh golden set.
-- The proof below comes from one ad production that ran end to end with nobody driving. Twenty-eight versions across five invented brands, then ten spec ads for real products, every render gated before a dollar moved.
+- The proof below comes from one autonomous ad production that ran end to end with nobody driving. Twenty-eight versions across five invented brands, then ten spec ads for real products, every render gated before a dollar moved.
 
 <table>
   <tr>
@@ -295,7 +295,7 @@ All of this is in the prompt too. Every engine got the same brief with the audie
 
 ## Who drove, and who watched
 
-I set the rules and watched. I wrote no scripts for this shoot and supplied five things.
+I set the rules and watched it run itself. I wrote no scripts for this shoot and supplied five things.
 
 - the architecture and the framework
 - the four-phase ad grammar, as a shape to follow
@@ -303,11 +303,13 @@ I set the rules and watched. I wrote no scripts for this shoot and supplied five
 - the rule that the most arresting beat opens the film
 - the rule that every human on screen is the same presenter
 
-- The agents loop-engineered the rest, boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger.
+- The agents ran the rest autonomously, loop-engineering boards, prompts, engine calls, quality gates, re-rolls, remasters and delivery, with every request and landing in an append-only ledger.
 - The loop itself is the industry's own, hypothesis, variations, tests, winners, run by a multi-agent system instead of a team.
 - The evals were designed and calibrated before a single render was paid for.
 
 ## The loop, as a map
+
+One loop, seven steps, and it ran unattended. The gates are where the system stops itself, and that is the only reason it was allowed to spend.
 
 <p align="center">
   <img src="assets/system-map.svg" alt="System map: one loop of seven steps, board, render, closer, build, ad gates, ship gate, deliver, and the three tiers of evals that own the gates at each step." width="100%">
@@ -413,4 +415,4 @@ python3 evals/derive.py
 - Engine prices and product positioning are as of August 2026, when the shoots ran, and are not re-checked.
 - The pinned identity stays in production. The voice id, avatar group and look ids are environment variables or `<id>` in the ledgers. The scripts read end to end, and rendering again needs an identity and vendor accounts of your own.
 
-This repository is the public release of the production pipeline as it ran: the probes, the guards, the labelled exemplars and the derivation. The identity, the wider labelled history and the vendor accounts stay with the production system. Apache-2.0.
+This repository is the public release of the autonomous pipeline as it ran: the probes, the guards, the labelled exemplars and the derivation. The identity, the wider labelled history and the vendor accounts stay with the production system. Apache-2.0.

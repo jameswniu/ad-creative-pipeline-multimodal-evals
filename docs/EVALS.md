@@ -12,7 +12,7 @@ The ten probes shipped here were calibrated in a wider battery before this pipel
 
 A wrong number in a chart fails loudly. A generated person fails **plausibly**: hair that fuzzes at the edge, a mouth trailing the audio by four frames, a gesture landing after the word it belonged to, eyes holding too still for thirty seconds, a background that breathes backward. Each of those is invisible to a type check, obvious to a person, and slightly different in tomorrow's draw.
 
-The pipeline renders on a schedule with nobody watching. There is no reviewer at the moment of spend. So the only way a human eye can be present at render time is if it was captured earlier, as data, and compiled into something a scheduler can enforce.
+The pipeline is autonomous. It renders on a schedule with nobody watching, and there is no reviewer at the moment of spend. So the only way a human eye can be present at render time is if it was captured earlier, as data, and compiled into something a scheduler can enforce.
 
 ```
 label  ->  derive  ->  gate  ->  render  ->  relabel
