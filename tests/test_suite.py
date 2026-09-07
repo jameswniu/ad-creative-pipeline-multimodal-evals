@@ -514,7 +514,7 @@ def test_loop_graph_steps_match_the_process_table():
     readme = open(os.path.join(ROOT, "README.md")).read()
     graph = readme.split("```mermaid")[1].split("```")[0]
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
-    graphed = [a or b for a, b in re.findall(r'\w+(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)]
+    graphed = [(a or b).split(" \u00b7 ")[0] for a, b in re.findall(r'\w+(?:\["([^"]+)"\]|\{\{?"([^"]+)"\}\}?)', run)]
     assert graphed == drawn, (graphed, drawn)
 
 
@@ -529,7 +529,7 @@ def test_loop_graph_ownership_matches_the_map():
     readme = open(os.path.join(ROOT, "README.md")).read()
     graph, after = readme.split("```mermaid")[1].split("```", 1)
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
-    title_of = {m.group(1): m.group(2) or m.group(3) for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)}
+    title_of = {m.group(1): (m.group(2) or m.group(3)).split(" \u00b7 ")[0] for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{\{?"([^"]+)"\}\}?)', run)}
     owner = {}
     for ids, tier in re.findall(r"^\s+class ([\w,]+) (process|outcome|quality)\s*$", graph, re.M):
         for node in ids.split(","):
@@ -553,10 +553,14 @@ def test_loop_graph_ownership_matches_the_map():
     }
     seen = {}
     for stroke, tier, owns in rows:
-        assert stroke in stroke_of, stroke
-        seen[tier] = [t for t in tiers if t in owns]
+        assert stroke.lower() in stroke_of, stroke
+        seen[tier if tier[0].isdigit() else tier.lower()] = [t for t in tiers if t in owns]
     assert seen == expected, (seen, expected)
-    assert [r[0] for r in rows] == ["solid", "dashed", "dotted", "dash-dot"], rows
+    assert [r[0].lower() for r in rows] == ["solid", "dashed", "dotted", "dash-dot"], rows
+    # the edges are the page's own state machine, so their endpoints are pinned too
+    edges = {tuple(e) for e in re.findall(r"^\s+(\w+) (?:-->|-\.->)(?:\|\"[^\"]*\"\|)? *(\w+)\s*$", graph, re.M)}
+    for pair in [("AG", "R"), ("AG", "EYE"), ("EYE", "SG"), ("SG", "BU"), ("D", "L"), ("L", "B")]:
+        assert pair in edges, (pair, sorted(edges))
 
 
 if __name__ == "__main__":
