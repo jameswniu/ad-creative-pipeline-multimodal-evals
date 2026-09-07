@@ -122,7 +122,9 @@ jobs:
               echo ""
               sed -n '/CHECKS SKIPPED/,/^$/p' "$RUNNER_TEMP/scan.out" | sed 's/^/    /'
               echo ""
-              echo "Set the PII_CONTEXT and PII_NAMES repository secrets to arm these."
+              echo "Set the PII_CONTEXT and PII_NAMES repository secrets to arm these,"
+              echo "and commit \`tools/pii_ci_armed\` to require them. Until then they are"
+              echo "enforced locally by \`.githooks/pre-commit\` and not here."
             else
               echo "All checks armed."
             fi
@@ -152,11 +154,157 @@ jobs:
   #
   # The decision lives in a script rather than in this YAML because YAML cannot
   # be tested, and tests/test_suite.py runs that script in every direction.
+
+  # WHETHER THE REQUIREMENT IS SWITCHED ON AT ALL.
+  #
+  # Arming CI means putting tools/pii_context.txt and tools/pii_names.txt into
+  # this repository's Actions secrets, and both hold real third-party names. A
+  # finding message quotes the term it matched and a public repository's
+  # workflow log is public, so arming CI puts a real name one finding away from
+  # the open, which is the harm the scanner exists to prevent. So the
+  # requirement is opt-in, and tools/pii_ci_armed is what opts in.
+  #
+  # This is a JOB rather than an `if:` on the job below because a job-level
+  # condition cannot read the tree. Job `if:` is evaluated before any checkout
+  # runs, so hashFiles('tools/pii_ci_armed') sees an empty workspace and every
+  # repository looks unarmed forever. This job checks out, looks, and hands the
+  # answer down as an output.
+  #
+  # It is not itself the gate and must not be read as one. Its green tick means
+  # "the requirement question was answered", never "the classes ran", which is
+  # why it prints which classes did not run and where they are enforced instead.
+  #
+  # A SUPPLIED SECRET ALSO SWITCHES THE CHECK ON, marker or no marker, and that
+  # clause is not decoration. The deterministic job above materializes whatever
+  # secret exists and scans with it either way, and the scanner discards grep's
+  # complaint about a pattern it cannot execute, so a rule with a stray bracket
+  # in it activates nothing and reports nothing. The gate below is the only
+  # thing that ever notices. Gating it on the marker alone meant somebody could
+  # set the secrets, get a typo, and read a gray tick as an opt-out they never
+  # made. The values are compared in the expression rather than passed into the
+  # runner, so this job learns whether they are empty without ever holding them.
+  ci-arming:
+    name: ci arming
+    runs-on: ubuntu-latest
+    outputs:
+      required: ${{ steps.marker.outputs.required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Look for the opt-in marker
+        id: marker
+        env:
+          SECRETS_SUPPLIED: ${{ (secrets.PII_CONTEXT != '' || secrets.PII_NAMES != '') && 'true' || 'false' }}
+        run: |
+          # Tested against an explicit "false" rather than for "true", so that
+          # anything else at all, an empty value or one the runner redacted,
+          # lands on the side that RUNS the check. Only "false" can turn it
+          # off, and "false" is only ever written here when neither secret is
+          # set, which is exactly when there is no secret value that could
+          # collide with it.
+          if [ -f tools/pii_ci_armed ] || [ "$SECRETS_SUPPLIED" != "false" ]; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            if [ -f tools/pii_ci_armed ]; then
+              echo "tools/pii_ci_armed is present, so an armed scanner is REQUIRED here."
+            else
+              echo "A scanner secret is set without tools/pii_ci_armed. A supplied secret is"
+              echo "checked whether or not the marker is there, because a value that parses to"
+              echo "nothing usable is a broken rule rather than a decision not to arm CI."
+            fi
+            echo "The armed context check below decides whether it actually is armed."
+            {
+              echo "### PII gate arming"
+              echo ""
+              echo "An armed scanner is **required** on this run, so the armed context check runs."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            echo "tools/pii_ci_armed is absent and neither scanner secret is set, so an"
+            echo "armed scanner is NOT required here and the armed context check below is"
+            echo "skipped rather than failed."
+            echo ""
+            echo "WHAT DID NOT RUN IN CI ON THIS PUSH:"
+            echo "  class 4  third-party names"
+            echo "  class 5  project words"
+            echo "  class 6  project words, second table"
+            echo "Classes 1, 2, 3 and 7 ran in the deterministic job above."
+            echo ""
+            echo "All seven are enforced locally by .githooks/pre-commit, which reads"
+            echo "the real tools/pii_context.txt and tools/pii_names.txt off the"
+            echo "author's machine. That is where those names belong. Loading them"
+            echo "into a public repository's Actions secrets would put a real name one"
+            echo "finding message away from a public workflow log."
+            echo ""
+            echo "This is a skip, not a pass. Nothing here says classes 4, 5 and 6 are"
+            echo "clean; it says they were not examined by CI."
+            echo "::notice title=PII classes 4, 5 and 6 did not run in CI::tools/pii_ci_armed is absent and neither scanner secret is set, so the armed context check is skipped. All seven classes are enforced locally by .githooks/pre-commit."
+            {
+              echo "### PII gate arming"
+              echo ""
+              echo "\`tools/pii_ci_armed\` is absent and neither scanner secret is set, so an armed"
+              echo "scanner is **not required** in CI and the armed context check is **skipped**, not passed."
+              echo ""
+              echo "**Did not run in CI:** class 4 third-party names, class 5 and class 6 project words."
+              echo "**Ran in CI:** classes 1, 2, 3 and 7, in the deterministic job."
+              echo ""
+              echo "All seven are enforced locally by \`.githooks/pre-commit\`, which reads the real"
+              echo "\`tools/pii_context.txt\` and \`tools/pii_names.txt\` off the author's machine."
+              echo "Those files hold real third-party names, and a finding message quotes what it"
+              echo "matched, so putting them in a public repository's secrets would leak the thing"
+              echo "the scanner exists to catch."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   armed-context:
     name: armed context
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: ci-arming
+    # The requirement condition is why this job renders gray rather than red on
+    # a repository that has not opted in. A skipped job is a named check saying
+    # it did not run, which is the honest answer; a step that exits 0 inside a
+    # running job is a green tick that reads as "the classes ran". The script
+    # carries the same marker branch as a second wall, for the day somebody
+    # edits this line.
+    #
+    # THE MIDDLE CLAUSE IS THE FAIL-CLOSED ONE, and it is written as "not
+    # false" rather than "is true" on purpose. A plain `needs:` turns any
+    # arming-job failure into a SKIP of this job, and an `== 'true'` test does
+    # the same thing to an answer that arrived empty. GitHub counts a skipped
+    # required check as satisfied, so either one quietly disarms the gate on a
+    # repository that HAD opted in, and the checks list shows the same gray
+    # tick as an honest opt-out. Same defect as always: something announcing
+    # failure while reporting success.
+    #
+    # So ONLY a literal 'false' turns this off. A failed detector leaves the
+    # output empty, a redacted one leaves it empty, an edit that forgets a
+    # branch leaves it empty, and every one of those runs the job and hits the
+    # refusal below. Not cancelled rather than always(), so cancelling a run
+    # still cancels this.
+    if: >-
+      !cancelled() &&
+      needs.ci-arming.outputs.required != 'false' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
+      # An unknown state is not a safe state, which is the rule the gate script
+      # already applies to an unreadable branch context. This is the same rule
+      # one layer out, for an unreadable arming answer. It covers a detector
+      # that died AND a detector that returned something other than the two
+      # answers it is allowed to return, because those are the same amount of
+      # information about whether this repository opted in.
+      - name: Refuse an undecided arming answer
+        if: needs.ci-arming.result != 'success' || needs.ci-arming.outputs.required != 'true'
+        run: |
+          echo "FAIL: the ci arming job ended '${{ needs.ci-arming.result }}' and answered"
+          echo "'${{ needs.ci-arming.outputs.required }}', which is not one of the two"
+          echo "answers it is allowed to give, so whether tools/pii_ci_armed is in this"
+          echo "tree was never decided."
+          echo "Skipping on an undecided answer would render as a gray check, and GitHub"
+          echo "counts a skipped required check as satisfied, so an opted-in repository"
+          echo "would have been merged with classes 4, 5 and 6 unexamined and nothing"
+          echo "on the pull request saying so."
+          echo "::error title=PII arming undecided::The ci arming job did not return a usable answer, so the armed context check cannot tell whether this repository opted in. Failing rather than skipping."
+          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1

@@ -15,6 +15,8 @@ The dismissals are the point of writing this down. A gate whose false alarms get
 
 Both run in `.githooks/pre-commit`. Only the deterministic layer runs in CI, for the reason given in `.github/workflows/pii-scan.yml`.
 
+**Requiring an armed scanner in CI is opt-in.** Arming it means putting `tools/pii_context.txt` and `tools/pii_names.txt` into this repository's Actions secrets, and those two hold real third-party names, so with a finding message quoting whatever it matched, one of those names ends up in a public workflow log sooner or later. Commit `tools/pii_ci_armed` and the armed context check turns on, so a publication branch with the secrets missing goes red exactly as before. Leave the marker out and that check reports skipped instead, and the run prints which classes did not run in CI and says that all seven are enforced locally by the pre-commit hook.
+
 ## What the deterministic layer found
 
 125 findings on the first pass, 38 of them blocking. All were fixed or deliberately suppressed. It now exits 0 with 4 suppressions and **0 skipped checks**.

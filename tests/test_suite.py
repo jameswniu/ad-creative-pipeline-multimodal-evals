@@ -767,6 +767,52 @@ def test_staged_scan_fails_closed_when_a_blob_cannot_be_read():
             "the run must name the file it could not read\n" + out)
 
 
+_GATE_TREES = {}
+
+
+def _gate_in_a_tree(marker):
+    """A copy of the gate in a scratch tools/, with or without the opt-in marker.
+
+    The CI requirement is opt-in and tools/pii_ci_armed is what opts in, so both
+    states have to be reachable from a test. Writing the marker into the
+    repository to reach the armed one is not an option: that would arm the real
+    check as a side effect of running the suite, and the marker is supposed to
+    be a decision somebody makes on purpose.
+
+    The gate resolves the marker beside its own file rather than against the
+    working directory, which is what makes a scratch tools/ enough. The runs
+    below deliberately keep cwd on the repository, so a gate that went back to
+    reading `tools/pii_ci_armed` relative to the caller would find the
+    repository's own answer and every armed assertion here would break.
+
+    Cached rather than cleaned up, so the whole suite creates at most two of
+    these and neither outlives the temp directory it sits in.
+    """
+    key = bool(marker)
+    if key not in _GATE_TREES:
+        root = tempfile.mkdtemp(prefix="pii-gate-")
+        tools = os.path.join(root, "tools")
+        os.makedirs(tools)
+        copy = os.path.join(tools, "ci_require_pii_secrets.sh")
+        shutil.copy(os.path.join(ROOT, "tools", "ci_require_pii_secrets.sh"), copy)
+        if key:
+            with open(os.path.join(tools, "pii_ci_armed"), "w") as fh:
+                fh.write("")
+        _GATE_TREES[key] = copy
+    return _GATE_TREES[key]
+
+
+def _run_gate(script, **over):
+    env = {k: v for k, v in os.environ.items()
+           if k not in ("PII_CONTEXT", "PII_NAMES", "GITHUB_STEP_SUMMARY")}
+    env.update({"IS_FORK": "false", "TARGET_BRANCH": "main",
+                "PUBLICATION_BRANCH": "main"})
+    env.update(over)
+    r = subprocess.run(["bash", script], cwd=ROOT, env=env,
+                       capture_output=True, text=True, timeout=30)
+    return r.returncode, r.stdout + r.stderr
+
+
 def test_ci_fails_rather_than_passes_when_the_scanner_secret_is_missing():
     """A green tick that means three of the seven classes never ran.
 
@@ -780,19 +826,18 @@ def test_ci_fails_rather_than_passes_when_the_scanner_secret_is_missing():
     check they have no way to clear, since a fork cannot read secrets at all.
     Failing on every working-branch push is how a gate gets routed around.
     Passing when the context is unknown is the original defect wearing a hat.
+
+    Every branch here is about what a MISSING secret means, and since the CI
+    requirement became opt-in that question only exists where the marker is. So
+    these run against an armed scratch tree. Whether the requirement is on at
+    all is the next test.
     """
     script = os.path.join(ROOT, "tools", "ci_require_pii_secrets.sh")
     assert os.path.exists(script), "the decision script is missing"
+    armed = _gate_in_a_tree(marker=True)
 
     def run_gate(**over):
-        env = {k: v for k, v in os.environ.items()
-               if k not in ("PII_CONTEXT", "PII_NAMES", "GITHUB_STEP_SUMMARY")}
-        env.update({"IS_FORK": "false", "TARGET_BRANCH": "main",
-                    "PUBLICATION_BRANCH": "main"})
-        env.update(over)
-        r = subprocess.run(["bash", script], cwd=ROOT, env=env,
-                           capture_output=True, text=True, timeout=30)
-        return r.returncode, r.stdout + r.stderr
+        return _run_gate(armed, **over)
 
     rc, out = run_gate()
     assert rc != 0, ("a missing secret on the publication branch must fail the "
@@ -929,6 +974,149 @@ def test_ci_fails_rather_than_passes_when_the_scanner_secret_is_missing():
                      "state is not a safe state.\n" + out)
 
 
+def test_the_ci_requirement_is_opt_in_and_the_skip_says_what_did_not_run():
+    """Three states, and the middle one is why any of this changed.
+
+    Requiring the secrets on the publication branch put a red pii-gate on the
+    front page of a public portfolio repository, and the only two ways out were
+    both bad. Deleting the requirement is the false green this file spent three
+    rewrites killing. Arming it means loading tools/pii_context.txt and
+    tools/pii_names.txt into a public repository's Actions secrets, and those
+    hold real third-party names, so a finding message quoting what it matched
+    would print one into a public workflow log. That is the harm the scanner
+    exists to prevent, which makes arming CI a trade rather than a free win.
+
+    So the requirement is opt-in and tools/pii_ci_armed is what opts in. Three
+    states, all asserted here, and two of them are the ways this could be fixed
+    wrongly. A skip that prints ARMED is the old false green. A skip that says
+    nothing about the classes it did not run leaves a reader assuming they ran.
+    """
+    armed = _gate_in_a_tree(marker=True)
+    unarmed = _gate_in_a_tree(marker=False)
+    rule = "HIGH\tCLASS5-WORKPLACE\tproject-word\t\\bzebra\\b\n"
+
+    # 1. Opted in, secrets missing, publication branch. Unchanged, and it has to
+    #    be: the marker turns the requirement on, it does not soften it.
+    rc, out = _run_gate(armed)
+    assert rc != 0, (
+        "the marker is committed, so a missing secret on the publication "
+        "branch must still fail\n" + out)
+    assert "FAIL" in out, "the failure must say what it is: " + out
+
+    # 2. Opted in, secrets usable. Passes, and says all seven classes ran.
+    rc, out = _run_gate(armed, PII_CONTEXT=rule, PII_NAMES="Jane Doe")
+    assert rc == 0 and "ARMED" in out, (
+        "an armed scanner under a committed marker is the state the whole "
+        "requirement exists to reach\n" + out)
+
+    # 3. Not opted in, secrets missing, publication branch. This is the state
+    #    both repositories are actually in, and it is a skip.
+    rc, out = _run_gate(unarmed)
+    assert rc == 0, (
+        "a repository that has not opted in must not be handed a red "
+        "publication branch it can only clear by publishing real names\n" + out)
+    assert "SKIPPED" in out, (
+        "the skip has to be said out loud, or an exit 0 is just the original "
+        "false green with the reasoning deleted\n" + out)
+    assert "ARMED" not in out, (
+        "the skip claims the scanner is armed, which is the exact sentence "
+        "this gate was written to stop being printed\n" + out)
+    assert "FAIL" not in out, (
+        "the skip is reported as a failure, so the red check never went "
+        "away\n" + out)
+
+    # And it has to name what did not run. An exit 0 with no inventory reads as
+    # a pass to everyone who does not open the log, which is everyone.
+    for owed in ("Class 4", "class 5 and 6", ".githooks/pre-commit"):
+        assert owed in out, (
+            f"the skip does not mention {owed!r}, so a reader cannot tell "
+            "which classes were skipped or where they are actually "
+            f"enforced\n{out}")
+
+    # The marker governs what a MISSING secret means, not what a present one
+    # does. Reordering the branch to answer the marker first would silence a
+    # working armed scanner on any repository that had not committed the file.
+    rc, out = _run_gate(unarmed, PII_CONTEXT=rule, PII_NAMES="Jane Doe")
+    assert rc == 0 and "ARMED" in out, (
+        "the secrets are set and usable, so all seven classes ran and the run "
+        "must say so whether or not the marker is committed\n" + out)
+
+    # THE OTHER HALF OF THAT SENTENCE, and the first cut of this change got it
+    # wrong. A secret somebody SET, that parses to nothing usable, is a broken
+    # rule and not an opt-out. The deterministic job materializes it and scans
+    # with it whether or not the marker is committed, and the scanner throws
+    # away grep's complaint about a pattern it cannot execute, so the rule
+    # matches nothing and reports nothing. This gate is the only thing that
+    # ever says so, and skipping it on the marker took that away: a stray
+    # bracket would have read exactly like a repository that opted out.
+    for label, ctx, names in (
+        ("a pattern the engine rejects",
+         "HIGH\tCLASS5-WORKPLACE\tproject-word\t[unclosed\n", "Jane Doe"),
+        ("tabs flattened to spaces",
+         "HIGH CLASS5-WORKPLACE project-word \\bzebra\\b\n", "Jane Doe"),
+        ("the template pasted straight in", "# one rule per line\n", "Jane Doe"),
+        # Half-arming is still somebody trying to arm CI, and one secret has
+        # never been both.
+        ("only one of the two supplied", rule, ""),
+        # AND THE TWO LAYERS HAVE TO AGREE ON WHAT SUPPLIED MEANS. The workflow
+        # runs this job when `secrets.PII_CONTEXT != ''`, which reads the value
+        # as GitHub holds it, while the gate normalizes first and a command
+        # substitution eats trailing newlines. Measure the same value in two
+        # places and a secret holding one blank line is supplied up there and
+        # absent down here, so the job runs, the gate takes the opt-out branch,
+        # and the publication branch goes GREEN with nothing armed.
+        ("a secret holding one blank line", "\n", ""),
+        ("a secret holding a CRLF blank line", "\r\n", ""),
+        ("a secret holding a single space", " ", ""),
+    ):
+        rc, out = _run_gate(unarmed, PII_CONTEXT=ctx, PII_NAMES=names)
+        assert rc != 0, (
+            f"{label} was supplied by hand and arms nothing, so the marker "
+            "must not excuse it. Nothing supplied is an opt-out; something "
+            f"supplied that parses to nothing is a typo nobody would see\n{out}")
+        assert "FAIL" in out, (
+            f"{label} is not reported as a failure, so the operator keeps "
+            f"believing the rule is running\n{out}")
+
+    # Same claim structurally, so a future edit cannot reintroduce the
+    # disagreement by moving one line above the other.
+    with open(os.path.join(ROOT, "tools", "ci_require_pii_secrets.sh")) as fh:
+        supplied_src = fh.read()
+    assert 'if [ -n "${PII_CONTEXT:-}" ] || [ -n "${PII_NAMES:-}" ]; then' in supplied_src, (
+        "the supplied test reads the normalized values, which have been "
+        "through a command substitution and lost their trailing newlines, so "
+        "it disagrees with the workflow condition that decides whether this "
+        "gate runs at all")
+
+    # The marker question is asked before the branch questions, or a repository
+    # that has not opted in would still get a red main and a warning on every
+    # working branch, which is the state this change exists to end.
+    rc, out = _run_gate(unarmed, TARGET_BRANCH="a-working-branch")
+    assert rc == 0 and "SKIPPED" in out and "WARNING" not in out, (
+        "an unarmed repository is warned about a requirement it never opted "
+        "into. The word SKIPPED alone does not settle this, because the "
+        "working-branch warning says the classes are skipped too, so the "
+        "warning itself has to be absent\n" + out)
+
+    # Fail-closed on an unknown branch context is a rule about the REQUIREMENT.
+    # With the requirement off there is nothing to fail closed about, and
+    # failing anyway puts the red check straight back.
+    rc, out = _run_gate(unarmed, TARGET_BRANCH="", PUBLICATION_BRANCH="")
+    assert rc == 0 and "SKIPPED" in out, (
+        "an unknown branch context fails a repository that never asked for "
+        "the requirement\n" + out)
+
+    # Resolved beside the script, not against the caller. cwd is the repository
+    # in every run above and the repository holds no marker, so a gate reading
+    # the marker relative to the working directory would have called states 1
+    # and 2 skipped and this whole test would be green for the wrong reason.
+    with open(os.path.join(ROOT, "tools", "ci_require_pii_secrets.sh")) as fh:
+        gate_text = fh.read()
+    assert 'GATE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' in gate_text, (
+        "the marker is resolved against the working directory, so the answer "
+        "changes with where the caller happened to stand")
+
+
 def test_ci_secret_gate_is_actually_wired_into_the_workflow():
     """The script can be perfect and still never run.
 
@@ -968,6 +1156,135 @@ def test_ci_secret_gate_is_actually_wired_into_the_workflow():
     runs = " ".join(s.get("run", "") for s in job["steps"])
     assert "ci_require_pii_secrets.sh" in runs, (
         "the armed-context job does not call the gate, so it guards nothing")
+
+
+def test_an_unarmed_repository_skips_the_job_rather_than_running_a_green_one():
+    """Gray, not green, and the difference is a job boundary.
+
+    The script's marker branch exits 0, and an exit 0 inside a job that RUNS is
+    a green tick in the checks list. Green reads as "the scan was fine" to
+    every visitor who does not open the log, which is the false green this
+    whole file is a monument to. A job that does not run reads as "did not
+    run", because that is what GitHub draws.
+
+    So the skip has to happen at the job boundary. A job `if:` cannot read the
+    tree, because it is evaluated before any checkout and hashFiles() would see
+    an empty workspace on every repository, so the answer comes from a small
+    job that checks out, looks for the marker, and hands it down as an output.
+    """
+    wf = os.path.join(ROOT, ".github", "workflows", "pii-scan.yml")
+    with open(wf) as fh:
+        text = fh.read()
+    try:
+        import yaml
+    except ImportError:
+        return
+    doc = yaml.safe_load(text)
+
+    gate = doc["jobs"]["armed-context"]
+    needs = gate.get("needs")
+    needs = [needs] if isinstance(needs, str) else list(needs or [])
+    assert needs, (
+        "the armed-context job depends on nothing, so it runs on every push "
+        "and an unarmed repository is red again")
+    arming = needs[0]
+    assert f"needs.{arming}.outputs.required" in gate.get("if", ""), (
+        "the armed-context job does not gate on the marker, so the skip has "
+        "to come from a step exiting 0, which renders green rather than gray")
+
+    # The condition can name an output nothing ever sets. That is not a skip,
+    # it is a job that never runs on any repository, armed or not.
+    detector = doc["jobs"][arming]
+    assert detector.get("outputs", {}).get("required"), (
+        f"{arming} declares no required output, so the condition above reads "
+        "an empty string and the gate can never run")
+    steps = detector["steps"]
+    assert any(s.get("uses", "").startswith("actions/checkout") for s in steps), (
+        f"{arming} never checks out, so it cannot see whether the marker is "
+        "in the tree")
+    run_text = "\n".join(s.get("run", "") for s in steps)
+    assert "tools/pii_ci_armed" in run_text, (
+        f"{arming} decides the arming question without reading the marker")
+    assert "required=true" in run_text and "required=false" in run_text, (
+        f"{arming} sets only one of the two answers, so one state falls "
+        "through to an empty output and the gate silently never runs")
+
+    # A SUPPLIED SECRET HAS TO SWITCH THE CHECK ON TOO. The deterministic job
+    # materializes whatever secret exists and scans with it whether or not the
+    # marker is committed, and the scanner discards grep's complaint about a
+    # pattern it cannot execute, so a rule with a stray bracket in it activates
+    # nothing and says nothing. This gate is the only thing that ever notices.
+    # Gate it on the marker alone and somebody who sets the secrets and makes a
+    # typo reads a gray tick as an opt-out they never made.
+    env = "\n".join(str(s.get("env", "")) for s in steps)
+    assert "secrets.PII_CONTEXT" in env and "secrets.PII_NAMES" in env, (
+        f"{arming} decides on the marker alone, so a secret that is set and "
+        "parses to nothing is never checked and the gate that would have "
+        "caught it is skipped")
+    assert "SECRETS_SUPPLIED" in run_text, (
+        f"{arming} reads the secrets into its environment and then ignores "
+        "them when it answers")
+
+    # A skipped job draws no log of its own, so the sentence about what did not
+    # run has to be printed by the job that DID run. Without it the honest gray
+    # check is indistinguishable from a check nobody bothered to configure.
+    for owed in ("class 4", "class 5", "class 6", ".githooks/pre-commit"):
+        assert owed in run_text, (
+            f"{arming} never mentions {owed!r}, so the one job that runs on an "
+            "unarmed repository does not say which classes were skipped or "
+            "where they are actually enforced")
+    assert "skip, not a pass" in run_text, (
+        f"{arming} does not say the skip is not a pass, which is the sentence "
+        "the deterministic scanner has printed since the beginning and the "
+        "one CI keeps forgetting to repeat")
+
+    # A DETECTOR THAT DIES DISARMS THE GATE, and it does it in the gray that is
+    # supposed to mean "deliberately not armed". A plain `needs:` skips this job
+    # whenever the job it depends on does not succeed, GitHub counts a skipped
+    # required check as satisfied, and an opted-in repository would then merge
+    # with classes 4, 5 and 6 unexamined and a checks list that looks exactly
+    # like an honest opt-out. Cheap to hit too, since it takes a checkout
+    # failure or a runner hiccup rather than any particular interleaving.
+    cond = gate.get("if", "")
+    assert "cancelled()" in cond or "always()" in cond, (
+        "the condition still carries the default 'all needs succeeded' rule, "
+        f"so it can never run when {arming} fails no matter what else it says")
+
+    # ONLY A LITERAL 'false' MAY TURN THE GATE OFF. Written as `== 'true'` the
+    # condition treats an ABSENT answer the same as a no, and absent is what a
+    # failed detector, a redacted output and a half-finished edit all produce.
+    # A gray tick then means either "deliberately not armed" or "the check
+    # broke", and nobody looking at the checks list can tell which.
+    assert f"needs.{arming}.outputs.required != 'false'" in cond, (
+        "the gate skips on anything that is not a yes, so an empty or missing "
+        "arming answer disarms it and renders as the same gray tick an honest "
+        "opt-out renders as")
+    assert f"needs.{arming}.outputs.required == 'true'" not in cond, (
+        "the condition tests for a yes rather than for an explicit no, which "
+        "puts every unexpected value on the skip side")
+
+    undecided = [s for s in gate["steps"]
+                 if f"needs.{arming}.result != 'success'" in s.get("if", "")]
+    assert undecided, (
+        "the gate runs on an undecided arming answer and then behaves as if "
+        "the answer were no, which is the same false green one job further out")
+    assert any(f"needs.{arming}.outputs.required != 'true'" in s.get("if", "")
+               for s in undecided), (
+        "the refusal covers a detector that DIED but not one that succeeded "
+        "and answered nothing, and the second one reaches the gate script, "
+        "which then decides on the marker alone as though that were the "
+        "question that was asked")
+    assert any("exit 1" in s.get("run", "") for s in undecided), (
+        "the undecided branch does not fail, so an arming job that died still "
+        "produces a green armed context check")
+
+    # The same rule one level in. The detector reads its own input the same
+    # way, so a redacted or empty SECRETS_SUPPLIED lands on the side that runs
+    # the check rather than the side that silently switches it off.
+    assert 'SECRETS_SUPPLIED" != "false"' in run_text, (
+        f"{arming} tests its input for a yes, so an empty or redacted value "
+        "reads as 'no secrets supplied' and the check it should have switched "
+        "on is skipped")
 
 
 def test_ship_gate_finds_the_replay_probe_and_fails_closed_without_it():

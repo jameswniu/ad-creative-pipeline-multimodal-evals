@@ -14,8 +14,20 @@
 #   it.
 #
 # THE POLICY, in the order it is evaluated
-#   1. BOTH secrets present            -> armed, exit 0.
-#   2. The run cannot read secrets at all (a pull request from a fork)
+#   1. BOTH secrets present            -> armed, exit 0. This holds whether or
+#      not the opt-in marker is there. The marker governs what a MISSING secret
+#      means, not what a present one does.
+#   2. tools/pii_ci_armed is not in the tree AND neither secret was supplied
+#                                      -> SKIPPED, exit 0. The CI requirement
+#      is opt-in and that marker is what opts in. See the ARMING MARKER block
+#      below for why arming CI on a public repository is a real cost rather
+#      than a free win. A secret that WAS supplied is judged on its merits
+#      whether or not the marker is there, because a set-but-unusable secret is
+#      a broken configuration rather than a decision. The workflow ALSO carries
+#      a job-level condition on the same pair, so the check renders as a
+#      genuinely skipped job. This branch is the second wall, same as the fork
+#      branch below.
+#   3. The run cannot read secrets at all (a pull request from a fork)
 #                                      -> SKIPPED, exit 0. The check is
 #      reported as skipped rather than passed, because a contributor who
 #      structurally cannot hold the credential must not be handed a red check
@@ -23,13 +35,13 @@
 #      The workflow ALSO carries an `if:` that keeps this step from running on
 #      a fork at all, so the check renders as skipped in the UI. This branch
 #      is the second wall, for the day somebody edits that condition.
-#   3. The run targets the publication branch (a push to it, or a pull request
+#   4. The run targets the publication branch (a push to it, or a pull request
 #      into it)                        -> FAIL, exit 1. This is the moment the
 #      content becomes public, and an unarmed scan is not a scan.
-#   4. Anything else, a push to a working branch -> WARN, exit 0. Not the
+#   5. Anything else, a push to a working branch -> WARN, exit 0. Not the
 #      publication moment, and a red check on every intermediate push is how a
 #      gate gets routed around.
-#   5. The context could not be determined at all -> FAIL, exit 1. An unknown
+#   6. The context could not be determined at all -> FAIL, exit 1. An unknown
 #      state is not a safe state.
 #
 # ENVIRONMENT
@@ -38,6 +50,12 @@
 #   TARGET_BRANCH                 base_ref for a pull request, ref_name otherwise
 #   PUBLICATION_BRANCH            the repository default branch
 #   GITHUB_STEP_SUMMARY           optional, appended to when present
+#
+# FILES
+#   tools/pii_ci_armed            the opt-in marker, resolved beside this
+#                                 script rather than against the working
+#                                 directory, so the answer does not change
+#                                 with where the caller happened to stand
 
 set -uo pipefail
 
@@ -57,6 +75,65 @@ NAMES_VALUE="$(printf '%s' "$NAMES_VALUE" | tr -d '\r')"
 IS_FORK="${IS_FORK:-false}"
 TARGET_BRANCH="${TARGET_BRANCH:-}"
 PUBLICATION_BRANCH="${PUBLICATION_BRANCH:-}"
+
+# THE ARMING MARKER, and why the CI requirement is opt-in
+#   Arming CI means loading tools/pii_context.txt and tools/pii_names.txt into
+#   this repository's Actions secrets. Those two files hold real third-party
+#   names, which is the whole reason they are gitignored. A finding message
+#   quotes the term it matched, and a workflow log on a public repository is
+#   public, so arming CI puts a real name one finding away from the open. That
+#   is the exact harm the scanner was written to prevent, so it is a trade the
+#   repository owner makes deliberately or not at all.
+#
+#   The old shape gave nobody that choice. A repository with no secrets set got
+#   a red publication branch forever, which on a portfolio repository is the
+#   first thing a visitor sees, and the only ways out were to arm it or to
+#   delete the gate. Requiring it becomes a decision, and the marker is where
+#   that decision is recorded.
+#
+#   It is a committed FILE rather than an environment variable, a repository
+#   variable or a workflow input because those three are all invisible from the
+#   tree. A file travels with the branch, shows up in a diff, and can be read by
+#   anyone looking at the repository, which is what makes turning the
+#   requirement off an act somebody can see rather than a setting somebody can
+#   quietly flip.
+#
+#   Absent, the requirement is off and this says so out loud. It does not say
+#   the classes ran.
+GATE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ARMING_MARKER="$GATE_DIR/pii_ci_armed"
+
+# AND THE MARKER ONLY GOVERNS AN ABSENT SECRET, never a supplied one.
+#   The first cut of this change skipped on the marker whenever anything was
+#   wrong, which quietly covered a case that is not an opt-out at all: a secret
+#   somebody SET, that parses to nothing usable. The deterministic job
+#   materializes a supplied secret and scans with it whether or not the marker
+#   is there, the scanner discards grep's complaint about a pattern it cannot
+#   execute, and every check below this line was what noticed. Skipping on the
+#   marker took that away, so a rule with a stray bracket in it would have read
+#   exactly like a repository that opted out and the term it was written to
+#   guard would have walked out on a green run.
+#
+#   Supplying either secret is somebody trying to arm CI. Half-arming it counts,
+#   for the same reason one secret has never been both. So the skip below needs
+#   the marker absent AND nothing supplied to look at.
+#
+#   READ RAW, NOT NORMALIZED, and this is not a nicety. The workflow decides
+#   whether to run this job from `secrets.PII_CONTEXT != ''`, which sees the
+#   value as GitHub holds it. The normalization above runs through a command
+#   substitution, which strips trailing newlines, so a secret holding one blank
+#   line is non-empty up there and empty down here. The two layers then
+#   disagree: the job runs because something was supplied, and the script takes
+#   the opt-out branch and exits 0, which is a GREEN required check on the
+#   publication branch with nothing armed. That is the false green this whole
+#   file exists to prevent, reintroduced by measuring the same value in two
+#   places. Reading the untouched environment makes the two agree by
+#   construction rather than by hope, which is the same argument the two rule
+#   parsers above are built on.
+SUPPLIED="no"
+if [ -n "${PII_CONTEXT:-}" ] || [ -n "${PII_NAMES:-}" ]; then
+  SUPPLIED="yes"
+fi
 
 # PRESENT IS NOT ARMED. A length test passes a secret holding nothing but the
 # template's comment lines, and the scanner then parses zero rules out of it
@@ -222,6 +299,32 @@ fi
 # different repair from "not set" and the operator needs to know which they have.
 if [ -n "$UNUSABLE" ]; then
   echo "NOTE: $UNUSABLE."
+fi
+
+# Asked before the fork question and before the branch questions, because it is
+# the more basic one: is this requirement switched on at all. Answering "a
+# maintainer must run the armed scan before publication" to a repository that
+# has deliberately not armed CI would be telling somebody to do a thing the
+# repository has already decided against.
+#
+# The SUPPLIED test is what keeps this from covering a broken configuration.
+# Nothing supplied and no marker is an opt-out. Something supplied that parses
+# to nothing is a rule the operator believes is running, and the checks below
+# are the only thing that would ever say otherwise.
+if [ ! -f "$ARMING_MARKER" ] && [ "$SUPPLIED" = "no" ]; then
+  echo "SKIPPED: the CI requirement is opt-in and tools/pii_ci_armed is not in"
+  echo "this repository, so $MISSING is not required here."
+  echo "Class 4 third-party names and the class 5 and 6 project words did NOT"
+  echo "run in CI. Classes 1, 2, 3 and 7 did, in the deterministic job."
+  echo "All seven are enforced locally by .githooks/pre-commit, which reads the"
+  echo "real tools/pii_context.txt and tools/pii_names.txt off the author's"
+  echo "machine, where those names are not one finding message away from a"
+  echo "public workflow log."
+  echo "This is reported as skipped, not as a pass. Commit tools/pii_ci_armed"
+  echo "and set the two secrets to require an armed scanner in CI as well."
+  echo "::notice title=PII context not required in CI::tools/pii_ci_armed is absent, so classes 4, 5 and 6 did not run in CI. All seven are enforced locally by .githooks/pre-commit. This check is skipped, not passed."
+  say_summary "PII context: **skipped**, the CI requirement is opt-in and \`tools/pii_ci_armed\` is absent. Classes 4, 5 and 6 did not run in CI. All seven are enforced locally by \`.githooks/pre-commit\`. Skipped is not passed."
+  exit 0
 fi
 
 if [ "$IS_FORK" = "true" ]; then
