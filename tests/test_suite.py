@@ -1023,7 +1023,7 @@ def test_ship_gate_finds_the_replay_probe_and_fails_closed_without_it():
     block = text[text.index('MP="$SKILL/mirror_probe.py"'):]
     block = block[:block.index('if [ -n "$DIRECTIONAL" ]')]
 
-    def run_replay(probe_exit, replayok="", says="MIRROR ok: stub verdict"):
+    def run_replay(probe_exit, replayok="", says=None):
         """probe_exit None means no probe file at all.
 
         `says` is what the probe prints. The default carries the MIRROR verdict
@@ -1036,7 +1036,9 @@ def test_ship_gate_finds_the_replay_probe_and_fails_closed_without_it():
             os.makedirs(skill)
             if probe_exit is not None:
                 with open(os.path.join(skill, "mirror_probe.py"), "w") as fh:
-                    fh.write(f"import sys\nprint({says!r})\nsys.exit({probe_exit})\n")
+                    line = says if says is not None else (
+                        "MIRROR REPLAYS: stub" if probe_exit == 1 else "MIRROR FORWARD: stub")
+                    fh.write(f"import sys\nprint({line!r})\nsys.exit({probe_exit})\n")
             mark = os.path.join(tmp, "receipt")
             with open(mark, "w") as fh:
                 fh.write("a receipt from a previous pass\n")
@@ -1084,13 +1086,31 @@ def test_ship_gate_finds_the_replay_probe_and_fails_closed_without_it():
     # line tells them apart, and with REPLAYOK set the crash used to walk into
     # the override branch and ship the clip with a receipt and no replay check
     # behind it. Both the bare crash and the crash under an override must hold.
-    for label, ok in (("a bare crash", ""), ("a crash under an override", "declared symmetric")):
-        rc, out, receipt = run_replay(1, replayok=ok, says="Traceback: ImportError")
+    crashes = (
+        ("a bare crash", "", "Traceback: ImportError"),
+        ("a crash under an override", "declared symmetric", "Traceback: ImportError"),
+        # The nastiest one, and it was live until an adversary reproduced it. A
+        # SyntaxError makes python quote the offending SOURCE LINE back at you,
+        # and the offending line in this probe is the one that prints the
+        # verdict, so the traceback contains the word MIRROR. stderr is folded
+        # into the gate's capture, so a loose substring test read that crash as
+        # a decision and shipped the clip.
+        ("a traceback quoting the verdict line", "declared symmetric",
+         '    print(f"MIRROR {out[chr(39)+chr(39)]}: ...  SyntaxError'),
+    )
+    for label, ok, says in crashes:
+        rc, out, receipt = run_replay(1, replayok=ok, says=says)
         assert rc == 64, (
-            f"{label} exits 1 exactly like a real replay verdict, so without the "
-            f"verdict line it must fail closed; got {rc}\n{out}")
-        assert "no verdict line" in out, out
+            f"{label} exits 1 exactly like a real replay verdict, so without an "
+            f"anchored verdict line it must fail closed; got {rc}\n{out}")
+        assert "no verdict matching its exit code" in out, out
         assert not receipt, f"{label} left an approval receipt standing"
+
+    # The verdict must also AGREE with the exit code, or a probe half-rewritten
+    # between the two could report forward motion while exiting on a replay.
+    rc, out, receipt = run_replay(1, says="MIRROR FORWARD: stub")
+    assert rc == 64, f"a FORWARD verdict with a replay exit must hold; got {rc}\n{out}"
+    assert not receipt, "a contradictory verdict left an approval receipt standing"
 
     # A probe that RAN and reached no verdict is the same silent skip wearing
     # different clothes, and it only became reachable here once the probe

@@ -302,16 +302,27 @@ if [ -z "$ARROWOK" ]; then
   # no replay check at all. The probe prints a MIRROR verdict line on both of
   # its real outcomes and on neither of its failures, so the line is what makes
   # the exit code mean something.
-  case "$MPOUT" in
-    *"MIRROR "*) ;;
-    *)
-      echo "SHIP-GATE HOLD, the replay probe printed no verdict line (exit $MPRC)."
-      echo "It prints one on both of its real outcomes, so its absence means the"
-      echo "probe crashed rather than decided, and a crash must not be read as a"
-      echo "verdict just because it shares an exit code with one."
-      rm -f "$MARK"
-      exit 64 ;;
-  esac
+  # The verdict line must be ANCHORED and must AGREE with the exit code. A bare
+  # substring test is not enough: a SyntaxError in the probe makes python quote
+  # the offending source line back at you, and the offending line here is the
+  # one that prints the verdict, so the traceback contains the word MIRROR and
+  # a loose match reads a crash as a decision. The traceback quotes the source
+  # indented, and stderr is folded into this output, so only a line that STARTS
+  # with the verdict counts. Pairing it with the exit code closes the other
+  # half: a FORWARD verdict cannot arrive with a replay exit, or the other way.
+  MPVERDICT="$(printf '%s\n' "$MPOUT" | grep -c '^MIRROR \(FORWARD\|REPLAYS\):')"
+  if [ "$MPVERDICT" -lt 1 ] \
+     || { [ "$MPRC" = "0" ] && ! printf '%s\n' "$MPOUT" | grep -q '^MIRROR FORWARD:'; } \
+     || { [ "$MPRC" = "1" ] && ! printf '%s\n' "$MPOUT" | grep -q '^MIRROR REPLAYS:'; }
+  then
+    echo "SHIP-GATE HOLD, the replay probe gave no verdict matching its exit code ($MPRC)."
+    echo "A real run prints MIRROR FORWARD: with 0 or MIRROR REPLAYS: with 1, at the"
+    echo "start of a line. Anything else is a crash wearing a verdict's exit code,"
+    echo "and python quotes the printing line back in a traceback, so a loose match"
+    echo "on the word would read the crash as a decision."
+    rm -f "$MARK"
+    exit 64
+  fi
   if [ "$MPRC" = "1" ]; then
     if [ -n "${REPLAYOK:-}" ]; then
       echo "  REPLAY OVERRIDE (logged): $REPLAYOK"
