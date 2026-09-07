@@ -18,9 +18,9 @@
 
 <br/><br/>
 
-<strong>A multi-agent system I run in production shot thirty-eight video ads with nobody watching, and could only spend when its own checks said yes.</strong><br/>
-Five invented brands and ten real products, on four AI video engines.<br/>
-This repository is the public release of that pipeline: the checks, the ledgers, and every script that ran.
+<strong>The product is the evals, and they double as a router across four video engines, the way Perplexity routes a question to a model, here for video.</strong><br/>
+A multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
+This repository is the public release of that pipeline: the checks, the ledgers, the winners table that routes, and every script that ran.
 
 <br/>
 
