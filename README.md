@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/evals-three-tiers.svg" alt="How do you craft evals? Split the question in three. Process evals ask whether every step ran and its gate fired, and their source of truth is the pipeline graph, fixed by the scripts. Outcome evals ask whether what shipped is true to the facts, and their source of truth is the research pass, re-derived per brief. Vibe evals ask whether it feels right to this audience, and their source of truth is the golden set, re-derived per audience." width="100%">
+  <img src="assets/evals-three-tiers.svg" alt="How do you craft evals? Split the question in three. Process evals ask whether every step ran and its gate fired, and their source of truth is the pipeline graph, fixed by the scripts. Outcome evals ask whether what shipped is true to the facts, and their source of truth is the research pass, re-derived per brief. Quality evals ask whether it meets the bar for this audience, and their source of truth is the golden set, re-derived per audience." width="100%">
 </p>
 
 <div align="center">
@@ -36,19 +36,19 @@ This repository is the public release of that pipeline: the checks, the ledgers,
 |:---|:---|:---|:---|
 | **Process evals** | Did every step run, in order, and did its gate fire before money moved? | The pipeline's own graph | Only when the scripts change |
 | **Outcome evals** | Is what shipped true, to the brief and to the facts it leans on? | The research pass behind the brief | Every time the brief changes |
-| **Vibe evals** | Does it feel right to the audience it was made for? | A golden set of hand-labelled exemplars, plus the market's own bar | Every time the audience changes |
+| **Quality evals** | Does it meet the bar for the audience it was made for? | A golden set of hand-labelled exemplars, plus the market's own bar | Every time the audience changes |
 
 Three words carry the page. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. Making the video was the easy half. The hard half is deciding, with nobody in the room, whether it is good enough to pay for. The three tiers split that decision into pieces small enough to build.
 
 - The first tier is the skeleton and it stays put.
-- The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the vibe evals are re-derived from a fresh golden set.
+- The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the quality evals are re-derived from a fresh golden set.
 - The proof below comes from one ad production that ran end to end with nobody driving. Twenty-eight versions across five invented brands, then ten spec ads for real products, every render gated before a dollar moved.
 
 <table>
   <tr>
     <td width="33%" align="center" valign="top"><a href="#1-process-evals"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260826-cell-omni-orchard.gif" alt="Process evals, the mailbox that erupts like a geyser" width="100%"></a><br><b>Process.</b> Fifty-nine scene renders across four rounds sit in the ledger behind the eight cuts that shipped, and every gate fired before a dollar moved. <a href="#1-process-evals">See the ledger</a></td>
     <td width="33%" align="center" valign="top"><a href="#2-outcome-evals"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260827-cell-perplexity.gif" alt="Outcome evals, four hundred pages fold into one" width="100%"></a><br><b>Outcome.</b> Four hundred pages fold into one. The line this spot closes on is the line on the company's own page, checked by a second engine told to refute it. <a href="#2-outcome-evals">See the spec ads</a></td>
-    <td width="33%" align="center" valign="top"><a href="#3-vibe-evals"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-seedance2-orchard.gif" alt="Vibe evals, the coffee spot that won its panel" width="100%"></a><br><b>Vibe.</b> Four engines shot the same coffee brief. A panel tuned to morning craving picked this one, and a panel tuned to sleep picked a different engine for a different brand. <a href="#3-vibe-evals">See the race</a></td>
+    <td width="33%" align="center" valign="top"><a href="#3-quality-evals"><img src="https://github.com/jameswniu/ad-creative-pipeline-multimodal-evals/releases/download/media-2026-08/shoot-20260824-cell-seedance2-orchard.gif" alt="Quality evals, the coffee spot that won its panel" width="100%"></a><br><b>Quality.</b> Four engines shot the same coffee brief. A panel tuned to morning craving picked this one, and a panel tuned to sleep picked a different engine for a different brand. <a href="#3-quality-evals">See the race</a></td>
   </tr>
 </table>
 
@@ -211,11 +211,11 @@ The first batch landed fifteen scenes on fifteen requests with zero content reje
 
 ---
 
-## 3. Vibe evals
+## 3. Quality evals
 
-Vibe evals are the tier everyone argues about, so I made them the most mechanical of the three.
+Quality evals are the tier everyone argues about, so I made them the most mechanical of the three.
 
-- A vibe check, in practice, is a person watching a clip and saying good or not. I did that first, on the 48 labelled exemplars behind the thresholds and the 42 eye-labelled scenes behind the judge. Then the verdicts were compiled into numbers a scheduler can enforce.
+- A quality check, in practice, is a person watching a clip and saying good enough or not. I did that first, on the 48 labelled exemplars behind the thresholds and the 42 eye-labelled scenes behind the judge. Then the verdicts were compiled into numbers a scheduler can enforce.
 - The source of truth is that golden set plus the market's own bar. The vendor's premium baseline sits in the race as the A0 column.
 - Change the audience and the tier is re-derived, because what good means has flipped.
 - One probe battery for everything. A category picks which rows gate and which merely report, and that pick is what defines the category. The direction of good is set per audience. A coffee ad reads gesture energy upward and a sleep ad flips the same instrument, because calm sells.
@@ -339,23 +339,23 @@ flowchart LR
     classDef run fill:#202024,stroke:#5f626a,color:#e6e6ec
     classDef process fill:#202024,stroke:#5f626a,stroke-width:2px,color:#e6e6ec
     classDef outcome fill:#202024,stroke:#5f626a,stroke-width:2px,stroke-dasharray:6 3,color:#e6e6ec
-    classDef vibe fill:#202024,stroke:#c9a86a,stroke-width:2px,stroke-dasharray:2 3,color:#e6e6ec
+    classDef quality fill:#202024,stroke:#c9a86a,stroke-width:2px,stroke-dasharray:2 3,color:#e6e6ec
     classDef shared fill:#202024,stroke:#5f626a,stroke-width:2px,stroke-dasharray:6 3 2 3,color:#e6e6ec
     class L run
     class B,R,C,BU,SG,D process
     class AG outcome
-    class AG vibe
+    class AG quality
     class AG shared
-    class EYE vibe
+    class EYE quality
     style RUN fill:#f4f4f7,stroke:#5f626a,color:#18181c
 ```
 
 | stroke | tier | owns |
 |---|---|---|
 | solid | 1 Process | Board, Render, Closer, Build, Ship gate, Deliver |
-| dashed | 2 Outcome | Ad gates, shared with vibe |
-| dotted | 3 Vibe | the probes inside Ad gates, and the eye |
-| dash-dot | shared | Ad gates, outcome and vibe together |
+| dashed | 2 Outcome | Ad gates, shared with quality |
+| dotted | 3 Quality | the probes inside Ad gates, and the eye |
+| dash-dot | shared | Ad gates, outcome and quality together |
 
 ## Code map
 

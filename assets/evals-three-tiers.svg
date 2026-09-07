@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img"
- aria-label="How do you craft evals? Split the question in three. Process evals: did every step run, and did its gate fire? Source of truth, the pipeline graph, fixed by the scripts. Outcome evals: is what shipped true to the facts? Source of truth, the research pass, re-derived per brief. Vibe evals: does it feel right to this audience? Source of truth, the golden set, re-derived per audience.">
+ aria-label="How do you craft evals? Split the question in three. Process evals: did every step run, and did its gate fire? Source of truth, the pipeline graph, fixed by the scripts. Outcome evals: is what shipped true to the facts? Source of truth, the research pass, re-derived per brief. Quality evals: does it meet the bar for this audience? Source of truth, the golden set, re-derived per audience.">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#18181c"/><stop offset="55%" stop-color="#18181c"/><stop offset="100%" stop-color="#18181c"/>
@@ -35,9 +35,9 @@
 
   <rect x="800" y="150" width="360" height="242" rx="2" fill="#202024" fill-opacity="1" stroke="#5f626a"/>
   <rect x="800" y="150" width="7" height="242" rx="0" fill="#c9a86a"/>
-  <text x="982" y="192" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="24" font-weight="700" letter-spacing="2" fill="#c9a86a">VIBE EVALS</text>
-  <text x="982" y="234" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="25" font-weight="700" fill="#e6e6ec">Does it feel right</text>
-  <text x="982" y="264" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="25" font-weight="700" fill="#e6e6ec">to this audience?</text>
+  <text x="982" y="192" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="24" font-weight="700" letter-spacing="2" fill="#c9a86a">QUALITY EVALS</text>
+  <text x="982" y="234" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="25" font-weight="700" fill="#e6e6ec">Does it meet the bar</text>
+  <text x="982" y="264" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="25" font-weight="700" fill="#e6e6ec">for this audience?</text>
   <text x="982" y="306" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="22" letter-spacing="1.5" fill="#9a9ca3">SOURCE OF TRUTH</text>
   <text x="982" y="338" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#e6e6ec">the golden set</text>
   <text x="982" y="372" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="22" fill="#c9a86a">re-derived per audience</text>

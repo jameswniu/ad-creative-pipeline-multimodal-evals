@@ -531,7 +531,7 @@ def test_loop_graph_ownership_matches_the_map():
     run = graph.split("subgraph RUN[")[1].split("\n    end")[0]
     title_of = {m.group(1): m.group(2) or m.group(3) for m in re.finditer(r'(\w+)(?:\["([^"]+)"\]|\{"([^"]+)"\})', run)}
     owner = {}
-    for ids, tier in re.findall(r"^\s+class ([\w,]+) (process|outcome|vibe)\s*$", graph, re.M):
+    for ids, tier in re.findall(r"^\s+class ([\w,]+) (process|outcome|quality)\s*$", graph, re.M):
         for node in ids.split(","):
             if node in title_of:
                 owner.setdefault(title_of[node], set()).add(tier)
@@ -539,7 +539,7 @@ def test_loop_graph_ownership_matches_the_map():
     assert owner == tiers, (owner, tiers)
     # the stroke words in the legend must be the patterns the classDefs draw
     dash = {name: (m or "").strip() for name, m in re.findall(r"^\s+classDef (\w+) [^\n]*?(?:stroke-dasharray:([\d ]+))?,color", graph, re.M)}
-    stroke_of = {"solid": dash["process"], "dashed": dash["outcome"], "dotted": dash["vibe"], "dash-dot": dash["shared"]}
+    stroke_of = {"solid": dash["process"], "dashed": dash["outcome"], "dotted": dash["quality"], "dash-dot": dash["shared"]}
     assert stroke_of == {"solid": "", "dashed": "6 3", "dotted": "2 3", "dash-dot": "6 3 2 3"}, stroke_of
     # every legend row names exactly the steps its tier owns
     lines = after.strip().splitlines()
@@ -548,7 +548,7 @@ def test_loop_graph_ownership_matches_the_map():
     expected = {
         "1 Process": [t for t in tiers if tiers[t] == {"process"}],
         "2 Outcome": [t for t in tiers if "outcome" in tiers[t]],
-        "3 Vibe": [t for t in tiers if "vibe" in tiers[t]],
+        "3 Quality": [t for t in tiers if "quality" in tiers[t]],
         "shared": [t for t in tiers if len(tiers[t]) > 1],
     }
     seen = {}

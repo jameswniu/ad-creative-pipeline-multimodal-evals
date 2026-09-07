@@ -14,7 +14,7 @@
 [project]
 name = "ad-creative-pipeline-multimodal-evals"
 version = "0.1.0"
-description = "Three-tier eval harness (process, outcome, vibe) for agentic AI-generated video ads"
+description = "Three-tier eval harness (process, outcome, quality) for agentic AI-generated video ads"
 requires-python = ">=3.10"
 
 # Versions are the ones this was actually run against, not the minimum that might

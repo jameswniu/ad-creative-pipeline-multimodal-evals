@@ -17,7 +17,7 @@ SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
 MONO = "ui-monospace,SFMono-Regular,Menlo,monospace"
 PALE, DIM, EDGE, BRASS = "#e6e6ec", "#9a9ca3", "#5f626a", "#c9a86a"
 # one accent on the page, so the tier that owns a card is carried by the stroke pattern of its bar
-TIER_STYLE = {"process": (BRASS, ""), "outcome": (BRASS, "10 6"), "vibe": (BRASS, "3 5")}
+TIER_STYLE = {"process": (BRASS, ""), "outcome": (BRASS, "10 6"), "quality": (BRASS, "3 5")}
 SHARED_DASH = "10 4 3 4"  # a gate two tiers own carries dash-dot
 
 
@@ -33,14 +33,14 @@ STEPS = [
     ("Render", "every request and landing ledgered", "shoots/<batch>/*.jsonl", "process"),
     ("Closer", "identity pin, prop gate, jaw measured", "guards/, gates/source_gate.py", "process"),
     ("Build", "closer placed within 40 ms", "shoots/build-ad.sh", "process"),
-    ("Ad gates", "captions say what is spoken", "gates/ad_gates.sh", ("outcome", "vibe")),
+    ("Ad gates", "captions say what is spoken", "gates/ad_gates.sh", ("outcome", "quality")),
     ("Ship gate", "loudness, tail, fails closed", "guards/ship_gate.sh", "process"),
     ("Deliver", "withdrawn and replaced on record", "shoots/<batch>/landings.jsonl", "process"),
 ]
 TIERS = [
     ("PROCESS", "process", ["board probe, pre-spend", "identity pin, prop gate", "closer drift, ship gate"]),
     ("OUTCOME", "outcome", ["captions vs spoken words", "script vs the voice", "claims vs the live page"]),
-    ("VIBE", "vibe", ["five probes per audience", "thresholds from labels", "judge flags, eye rules"]),
+    ("QUALITY", "quality", ["five probes per audience", "thresholds from labels", "judge flags, eye rules"]),
 ]
 
 def fits(text, size, box_w, pad=14, bold=False, mono=False):
@@ -56,7 +56,7 @@ def text(x, y, s, size, fill, bold=False, mono=False, anchor="start", spacing=No
     return f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-family="{fam}" font-size="{size}"{weight}{extra} fill="{fill}">{html.escape(s)}</text>'
 
 def bar(x, y, h, color, dash):
-    """The owner bar on a card: a 5-unit stroke, solid for process, dashed for outcome, dotted for vibe, dash-dot when two tiers share it."""
+    """The owner bar on a card: a 5-unit stroke, solid for process, dashed for outcome, dotted for quality, dash-dot when two tiers share it."""
     extra = f' stroke-dasharray="{dash}"' if dash else ""
     return f'<line x1="{x + 2.5}" y1="{y}" x2="{x + 2.5}" y2="{y + h}" stroke="{color}" stroke-width="5"{extra}/>'
 
