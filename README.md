@@ -12,14 +12,15 @@
 <img alt="ad versions: 28, across 4 video engines" src="https://img.shields.io/badge/ad_versions-28_across_4_engines-d4b56a?style=flat-square&labelColor=18181c">
 <img alt="spec ads: 10, for real products" src="https://img.shields.io/badge/spec_ads-10_for_real_products-55595e?style=flat-square&labelColor=18181c">
 <img alt="spend: every render gated first" src="https://img.shields.io/badge/spend-every_render_gated_first-55595e?style=flat-square&labelColor=18181c">
+<img alt="router: a different engine wins per audience" src="https://img.shields.io/badge/router-a_different_engine_per_audience-55595e?style=flat-square&labelColor=18181c">
 <img alt="graded by hand: 48 exemplars, 42 scenes" src="https://img.shields.io/badge/graded_by_hand-48_exemplars_%C2%B7_42_scenes-55595e?style=flat-square&labelColor=18181c">
 <img alt="thresholds traced to those grades: 10 of 10, and 10 of 10 named gating thresholds derived from labelled exemplars" src="https://img.shields.io/badge/thresholds_traced_to_grades-10%2F10_derived-55595e?style=flat-square&labelColor=18181c">
 <img alt="license: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-55595e?style=flat-square&labelColor=18181c">
 
 <br/><br/>
 
-<strong>The product is the evals, and they double as a router across four video engines, the way Perplexity routes a question to a model, here for video.</strong><br/>
-An autonomous multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
+<strong>Three open problems in AI video, and one loop that solves all three: it shoots with no director, it grades pixels and audio instead of text, and it routes each brief to the engine that wins that audience.</strong><br/>
+The routing is Perplexity's idea moved to video, and the evals are what make the pick. An autonomous multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
 This repository is the public release of that pipeline: the checks, the ledgers, the winners table that routes, and every script that ran.
 
 <br/>
@@ -38,7 +39,7 @@ This repository is the public release of that pipeline: the checks, the ledgers,
 | **Outcome evals** | Is what shipped true, to the brief and to the facts it leans on? | The research pass behind the brief | Every time the brief changes |
 | **Quality evals** | Does it meet the bar for the audience it was made for? | A golden set of hand-labelled exemplars, plus the market's own bar | Every time the audience changes |
 
-Three words carry the page. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. Making the video was the easy half. The hard half is autonomy, deciding with nobody in the room whether it is good enough to pay for. The three tiers split that decision into pieces small enough to build.
+Three words carry the page. A **probe** is a check, a **threshold** is the line that check has to clear, and a **gate** is what stops the job when the line is not cleared. A text eval reads a string. Every probe here is a measurement on the file itself, pixels, audio and timing, which is why the usual eval toolkit does not reach this work. Making the video was the easy half. The hard half is autonomy, deciding with nobody in the room whether it is good enough to pay for. The three tiers split that decision into pieces small enough to build.
 
 - The first tier is the skeleton and it stays put.
 - The other two are the parts you swap. Point the same loop at a new product and the outcome evals are re-derived from fresh research. Point it at a new audience and the quality evals are re-derived from a fresh golden set.
@@ -222,9 +223,9 @@ Quality evals are the tier everyone argues about, so I made them the most mechan
 - 10 of the 10 named gating thresholds in [`probes/`](probes/) sit between a labelled pass and a labelled reject. A tool re-measures the shipped pixels and refuses to stay green if the number does not come back.
 - I stay the final judge. A language-model judge attaches a blind description and a flag to the strip as evidence and never holds the verdict.
 
-### Four engines, five audiences, five panels
+### The router, and the race behind it
 
-Four engines ran the same five briefs with the audience written into every prompt, and the panels picked a different winner per audience.
+Four engines ran the same five briefs with the audience written into every prompt, and the panels picked a different winner per audience. The winners table below is the router. A brief comes in, the panel for that audience scores the pool, and the highest row wins the buy.
 
 - Bold is the best reading in its row, in that row's own direction.
 - The WINNER takes the most rows. When versions tie, the row the panel gates on decides.
@@ -270,7 +271,7 @@ The same four engines shot Quiet Hours, a brief that sells permission to rest, a
 | Quiet Hours | Permission to rest, gesture flipped so calm wins | [HeyGen, the premium baseline](#winner-quiet) | Sweeps the four calm rows. This is where the router pays up |
 | Slow Road Travel | Wanderlust, gesture upward | [Seedance 2.0](#winner-slowroad) | Three rows: cleanest eye read, calmest frame, steadiest face against Wan's bigger motion |
 
-No engine sweeps the catalogue.
+No engine sweeps the catalogue, which is the whole case for routing instead of standardising on a favourite.
 
 - Wan 3.0 takes the spots that turn on legible story text and composed calm.
 - Seedance 2.0 takes the ones that turn on clean eyes and a steady face.
@@ -293,7 +294,7 @@ All of this is in the prompt too. Every engine got the same brief with the audie
 
 ---
 
-## Who drove, and who watched
+## Nobody directed the shoot
 
 I set the rules and watched it run itself. I wrote no scripts for this shoot and supplied five things.
 
