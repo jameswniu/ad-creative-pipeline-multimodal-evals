@@ -19,7 +19,7 @@
 
 <br/><br/>
 
-<strong>I let it shoot 38 ads in production with nobody watching, and it could not spend a dollar until its own checks passed.</strong><br/>
+<strong>I let it shoot ads with nobody watching, and it could not spend a dollar until its own checks passed.</strong><br/>
 The evals grade pixels and audio instead of text, and they double as the router, picking the engine that wins each audience the way Perplexity picks a model per question.<br/>
 This repository is that pipeline, released in full.
 
