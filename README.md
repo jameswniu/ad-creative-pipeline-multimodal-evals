@@ -4,7 +4,7 @@
 
 <div align="center">
 
-<b><font size="6">Autonomous Ads Pipeline, Multimodal Evals</font></b>
+<b><font size="6">Autonomous Ads, Multimodal Router, Three-Tier Evals</font></b>
 
 <br/>
 
@@ -19,9 +19,9 @@
 
 <br/><br/>
 
-<strong>Three open problems in AI video, and one loop that solves all three: it shoots with no director, it grades pixels and audio instead of text, and it routes each brief to the engine that wins that audience.</strong><br/>
-The routing is Perplexity's idea moved to video, and the evals are what make the pick. An autonomous multi-agent system I run in production shot thirty-eight ads for five invented brands and ten real products, with nobody watching, and could only spend when its own checks said yes.<br/>
-This repository is the public release of that pipeline: the checks, the ledgers, the winners table that routes, and every script that ran.
+<strong>Thirty-eight ads shot in production with nobody watching, and it spent only when its own checks said yes.</strong><br/>
+The evals grade pixels and audio instead of text, and they double as the router, picking the engine that wins each audience the way Perplexity picks a model per question.<br/>
+This repository is that pipeline, released in full.
 
 <br/>
 
