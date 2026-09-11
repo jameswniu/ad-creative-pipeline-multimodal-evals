@@ -43,12 +43,14 @@ python3 probes/mirror_probe.py samples/exemplar-harbor-wan3-live.mp4
 python3 probes/mirror_probe.py samples/frozen-control-slowroad.mp4
 ```
 
-The derivation ends on `10 of 10 NAMED gating thresholds are DERIVED` and exits 0. The two probe runs print:
+The derivation walks every named constant, prints the labelled pass and the labelled reject that bracket it, and exits 0. Its count line reads `10 of 10 NAMED gating thresholds are DERIVED`. The two probe runs print one line each:
 
 ```
 MIRROR FORWARD: 16s | repeat 1.00 at P=5s (reject <0.4) | mirror 0.58 at t=10.4 (reject <0.22)
 MIRROR UNJUDGEABLE: scene distance 0.7 < floor 5.0. NOT a pass - too static to measure.
 ```
+
+**The second one exits 3, and 3 is the correct answer rather than a broken run.** `mirror_probe.py` exits 0 when it looked and found no replay, 1 when it found one, 3 when the clip is too static to be judged either way, and 64 when it cannot run at all, no clip named or the file unreadable. A frozen frame held for 40 s has no scene motion to measure, so the honest verdict is that there is no verdict, and the probe refuses to call that a pass.
 
 The frozen control is not a failed run. It is the labelled reject that brackets `mirror_probe.CONTROL_FLOOR` from below, and the derivation prints it beside the live take on that constant's own row:
 
