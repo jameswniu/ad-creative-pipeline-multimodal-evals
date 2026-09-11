@@ -31,6 +31,53 @@ This repository is that pipeline, released in full.
 
 ---
 
+## Run it on the pixels that ship
+
+Two things are checkable here without accounts, keys or a GPU. `python3` and `ffmpeg` are the only prerequisites.
+
+```
+pip install -r requirements.txt
+
+python3 evals/derive.py                                      # every threshold, re-derived from the labels
+python3 probes/mirror_probe.py samples/exemplar-harbor-wan3-live.mp4
+python3 probes/mirror_probe.py samples/frozen-control-slowroad.mp4
+```
+
+The derivation ends on `10 of 10 NAMED gating thresholds are DERIVED` and exits 0. The two probe runs print:
+
+```
+MIRROR FORWARD: 16s | repeat 1.00 at P=5s (reject <0.4) | mirror 0.58 at t=10.4 (reject <0.22)
+MIRROR UNJUDGEABLE: scene distance 0.7 < floor 5.0. NOT a pass - too static to measure.
+```
+
+The frozen control is not a failed run. It is the labelled reject that brackets `mirror_probe.CONTROL_FLOOR` from below, and the derivation prints it beside the live take on that constant's own row:
+
+```
+mirror_probe.CONTROL_FLOOR                   5.00     floor    6982.60        0.70  DERIVED
+```
+
+A floor of 5.0 with a labelled pass at 6982.6 above it and a labelled reject at 0.7 below it. The probe and the label agree because the label was made by running the probe.
+
+**`evals/derive.py` does not score a video.** It re-measures labelled exemplars and brackets the gating constants, so pointing it at a finished ad will not tell you whether that ad would have shipped. The per-video path is a probe, or `gates/ad_gates.sh` for a full master, which needs the scene files and the caption manifest that live beside a master in a shoot directory and are not in this repository.
+
+### Which checks stop a ship, and which only speak
+
+A mixed read is the design, not a broken run. Most probes report and do not refuse.
+
+| Check | On a bad reading |
+|:---|:---|
+| `caption_gate.py` | **Blocks.** A caption that does not say what is spoken, or drifts outside its window, fails the master |
+| Closer assembly drift | **Blocks** past 40 ms between where the closer's video starts and where its audio was placed |
+| `mouth_sync_probe.py` | **Blocks** only at FAIL, which is correlation under 0.10, the mouth unrelated to the audio. REVIEW passes with a logged line and the eye decides |
+| `sync_probe.py` | **Speaks only.** Demoted on 2026-08-27 after controls with a known 0.4 s shift moved it 80 ms in the wrong direction |
+| `source_gate.py` | **Speaks only.** Prints jaw travel, settle ratio and loop jump as three raw numbers with no verdict, so the metric and the line can be argued separately |
+| `probes/` | **Speak only** to the panels and the gates that read them |
+
+### Why measurement rather than a learned model
+
+Every threshold here is a hand-picked number over a measured signal, and no probe holds a trained model. That was a choice about iteration speed. Taste moved weekly while the pipeline was being built, and a constant next to a labelled pass and a labelled reject can be moved in an afternoon and re-bracketed by `derive.py` in one command, where a fitted model would need relabelling and a retrain to answer the same question. The scale path is the other way round: at enough traffic to segment by audience, per-demographic learned thresholds beat one hand-picked line, and the labelled exemplars in `evals/labels.csv` are already the training data for that. The generative side does hold models, but they are vendor APIs called over the network, not weights in this repository.
+
+
 **How do you craft evals? Split the question in three, and give each part its own source of truth.**
 
 | | The question it answers | Where its truth comes from | When it changes |
@@ -383,7 +430,7 @@ Everything below ran.
 | `gates/source_gate.py` | The closer look path: jaw, settle and loop jump measured on the raw render. The framing checks on the look, head and body inside the crop and shot size, run in look generation, which drives the avatar vendor's account and stays out of the repo |
 | `probes/` | The ten instruments the panels and gates read: gesture energy, background detail, eye rejection, scene simplicity, face level wander, lip sync, sync lag, replay detection, and the rest and spasm meters the ship gate runs on closers |
 | `guards/` | The four pre-spend guards and the learned rules the prop gate reads back |
-| `evals/derive.py`, `evals/labels.csv` | The labelled exemplars and the tool that re-measures them and brackets every gating constant |
+| `evals/derive.py`, `evals/labels.csv` | The labelled exemplars and the tool that re-measures them and brackets every gating constant. It derives thresholds and does not score a video |
 | `evals/judge-rubric.json`, `evals/judge-calibration.json` | The rubric the language-model judge scores against, and the 42 eye-labelled scenes its four versions were calibrated on |
 
 ## Recounted on every push
