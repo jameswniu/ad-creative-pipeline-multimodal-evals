@@ -38,7 +38,7 @@ Two things are checkable here without accounts, keys or a GPU. `python3` and `ff
 ```
 pip install -r requirements.txt
 
-python3 evals/derive.py                                      # every threshold, re-derived from the labels
+python3 evals/derive.py                    # re-derive every threshold
 python3 probes/mirror_probe.py samples/exemplar-harbor-wan3-live.mp4
 python3 probes/mirror_probe.py samples/frozen-control-slowroad.mp4
 ```
