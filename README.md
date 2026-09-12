@@ -43,24 +43,16 @@ python3 probes/mirror_probe.py samples/exemplar-harbor-wan3-live.mp4
 python3 probes/mirror_probe.py samples/frozen-control-slowroad.mp4
 ```
 
-The derivation walks every named constant, prints the labelled pass and the labelled reject that bracket it, and exits 0. Its count line reads `10 of 10 NAMED gating thresholds are DERIVED`. The two probe runs print one line each:
+The derivation prints every named constant beside the labelled pass and labelled reject that bracket it, counts them at `10 of 10 NAMED gating thresholds are DERIVED`, and exits 0. The two probes print one line each:
 
 ```
 MIRROR FORWARD: 16s | repeat 1.00 at P=5s (reject <0.4) | mirror 0.58 at t=10.4 (reject <0.22)
 MIRROR UNJUDGEABLE: scene distance 0.7 < floor 5.0. NOT a pass - too static to measure.
 ```
 
-**The second one exits 3, and 3 is the correct answer rather than a broken run.** `mirror_probe.py` exits 0 when it looked and found no replay, 1 when it found one, 3 when the clip is too static to be judged either way, and 64 when it cannot run at all, no clip named or the file unreadable. A frozen frame held for 40 s has no scene motion to measure, so the honest verdict is that there is no verdict, and the probe refuses to call that a pass.
+**The second one exits 3, which is the right answer and not a broken run.** A frozen frame held for 40 s has no scene motion to measure, so the probe refuses to call it a pass. That clip is the labelled reject the derivation brackets `mirror_probe.CONTROL_FLOOR` with, and the live take from the previous command is the labelled pass on the same axis.
 
-The frozen control is not a failed run. It is the labelled reject that brackets `mirror_probe.CONTROL_FLOOR` from below, and the derivation prints it beside the live take on that constant's own row:
-
-```
-mirror_probe.CONTROL_FLOOR                   5.00     floor    6982.60        0.70  DERIVED
-```
-
-A floor of 5.0 with a labelled pass at 6982.6 above it and a labelled reject at 0.7 below it. The probe and the label agree because the label was made by running the probe.
-
-**`evals/derive.py` does not score a video.** It re-measures labelled exemplars and brackets the gating constants, so pointing it at a finished ad will not tell you whether that ad would have shipped. The per-video path is a probe, or `gates/ad_gates.sh` for a full master, which needs the scene files and the caption manifest that live beside a master in a shoot directory and are not in this repository.
+**`evals/derive.py` does not score a video.** It re-measures labelled exemplars and brackets the gating constants. The per-video path is a probe, or `gates/ad_gates.sh` for a full master, which needs the scene files and the caption manifest that live beside a master in a shoot directory and are not in this repository.
 
 **How do you craft evals? Split the question in three, and give each part its own source of truth.**
 
@@ -449,9 +441,15 @@ A mixed read is the design, not a broken run. Most probes report and do not refu
 | `source_gate.py` | **Speaks only.** Prints jaw travel, settle ratio and loop jump as three raw numbers with no verdict, so the metric and the line can be argued separately |
 | `probes/` | **Speak only** to the panels and the gates that read them |
 
+A probe says which of those it means in its exit code. `mirror_probe.py` exits 0 when it looked and found no replay, 1 when it found one, 3 when the clip is too static to be judged either way, and 64 when it cannot run at all, no clip named or the file unreadable.
+
 ## Why measurement rather than a learned model
 
-Every threshold here is a hand-picked number over a measured signal, and no probe holds a trained model. That was a choice about iteration speed. Taste moved weekly while the pipeline was being built, and a constant next to a labelled pass and a labelled reject can be moved in an afternoon and re-bracketed by `derive.py` in one command, where a fitted model would need relabelling and a retrain to answer the same question. The scale path is the other way round: at enough traffic to segment by audience, per-demographic learned thresholds beat one hand-picked line, and the labelled exemplars in `evals/labels.csv` are already the training data for that. The generative side does hold models, but they are vendor APIs called over the network, not weights in this repository.
+Every threshold here is a hand-picked number over a measured signal, and no probe holds a trained model. That was a choice about iteration speed, not a claim that it is the better answer.
+
+- **Taste moved weekly while this was being built.** A constant sitting between a labelled pass and a labelled reject can be moved in an afternoon and re-bracketed by `derive.py` in one command. A fitted model needs relabelling and a retrain to answer the same question.
+- **The scale path runs the other way.** At enough traffic to segment by audience, per-demographic learned thresholds beat one hand-picked line, and the labelled exemplars in `evals/labels.csv` are already the training data for that.
+- **The generative side does hold models.** They are vendor APIs called over the network, not weights in this repository.
 
 ## Where the claims stop
 
