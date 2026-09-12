@@ -62,24 +62,6 @@ A floor of 5.0 with a labelled pass at 6982.6 above it and a labelled reject at 
 
 **`evals/derive.py` does not score a video.** It re-measures labelled exemplars and brackets the gating constants, so pointing it at a finished ad will not tell you whether that ad would have shipped. The per-video path is a probe, or `gates/ad_gates.sh` for a full master, which needs the scene files and the caption manifest that live beside a master in a shoot directory and are not in this repository.
 
-### Which checks stop a ship, and which only speak
-
-A mixed read is the design, not a broken run. Most probes report and do not refuse.
-
-| Check | On a bad reading |
-|:---|:---|
-| `caption_gate.py` | **Blocks.** A caption that does not say what is spoken, or drifts outside its window, fails the master |
-| Closer assembly drift | **Blocks** past 40 ms between where the closer's video starts and where its audio was placed |
-| `mouth_sync_probe.py` | **Blocks** only at FAIL, which is correlation under 0.10, the mouth unrelated to the audio. REVIEW passes with a logged line and the eye decides |
-| `sync_probe.py` | **Speaks only.** Demoted on 2026-08-27 after controls with a known 0.4 s shift moved it 80 ms in the wrong direction |
-| `source_gate.py` | **Speaks only.** Prints jaw travel, settle ratio and loop jump as three raw numbers with no verdict, so the metric and the line can be argued separately |
-| `probes/` | **Speak only** to the panels and the gates that read them |
-
-### Why measurement rather than a learned model
-
-Every threshold here is a hand-picked number over a measured signal, and no probe holds a trained model. That was a choice about iteration speed. Taste moved weekly while the pipeline was being built, and a constant next to a labelled pass and a labelled reject can be moved in an afternoon and re-bracketed by `derive.py` in one command, where a fitted model would need relabelling and a retrain to answer the same question. The scale path is the other way round: at enough traffic to segment by audience, per-demographic learned thresholds beat one hand-picked line, and the labelled exemplars in `evals/labels.csv` are already the training data for that. The generative side does hold models, but they are vendor APIs called over the network, not weights in this repository.
-
-
 **How do you craft evals? Split the question in three, and give each part its own source of truth.**
 
 | | The question it answers | Where its truth comes from | When it changes |
@@ -453,6 +435,23 @@ git clone https://github.com/jameswniu/autonomous-ads-pipeline-multimodal-evals
 cd autonomous-ads-pipeline-multimodal-evals && pip install -r requirements.txt
 python3 evals/derive.py
 ```
+
+## Which checks stop a ship, and which only speak
+
+A mixed read is the design, not a broken run. Most probes report and do not refuse.
+
+| Check | On a bad reading |
+|:---|:---|
+| `caption_gate.py` | **Blocks.** A caption that does not say what is spoken, or drifts outside its window, fails the master |
+| Closer assembly drift | **Blocks** past 40 ms between where the closer's video starts and where its audio was placed |
+| `mouth_sync_probe.py` | **Blocks** only at FAIL, which is correlation under 0.10, the mouth unrelated to the audio. REVIEW passes with a logged line and the eye decides |
+| `sync_probe.py` | **Speaks only.** Demoted on 2026-08-27 after controls with a known 0.4 s shift moved it 80 ms in the wrong direction |
+| `source_gate.py` | **Speaks only.** Prints jaw travel, settle ratio and loop jump as three raw numbers with no verdict, so the metric and the line can be argued separately |
+| `probes/` | **Speak only** to the panels and the gates that read them |
+
+## Why measurement rather than a learned model
+
+Every threshold here is a hand-picked number over a measured signal, and no probe holds a trained model. That was a choice about iteration speed. Taste moved weekly while the pipeline was being built, and a constant next to a labelled pass and a labelled reject can be moved in an afternoon and re-bracketed by `derive.py` in one command, where a fitted model would need relabelling and a retrain to answer the same question. The scale path is the other way round: at enough traffic to segment by audience, per-demographic learned thresholds beat one hand-picked line, and the labelled exemplars in `evals/labels.csv` are already the training data for that. The generative side does hold models, but they are vendor APIs called over the network, not weights in this repository.
 
 ## Where the claims stop
 
